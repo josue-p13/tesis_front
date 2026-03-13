@@ -57,6 +57,12 @@ export interface EstadisticasGoogleScholar {
   serper_habilitado: boolean;
 }
 
+export interface SerperError {
+  ocurrio: boolean;
+  codigo: number;
+  mensaje: string;
+}
+
 export interface ValidarResponse {
   total: number;
   encontradas: number;
@@ -67,6 +73,7 @@ export interface ValidarResponse {
   estadisticas_bd: EstadisticasBD;
   estadisticas_google_scholar: EstadisticasGoogleScholar;
   referencias: ReferenciaValidada[];
+  serper_error?: SerperError;
 }
 
 export type EstadoReferencia =

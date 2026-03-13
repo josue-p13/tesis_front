@@ -1,83 +1,118 @@
 @import "tailwindcss";
 
+/* ─── Paleta base GitHub-dark + cyan ─────────────────────────────── */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 224 71.4% 4.1%;
-    --card: 0 0% 100%;
-    --card-foreground: 224 71.4% 4.1%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 224 71.4% 4.1%;
-    --primary: 220.9 39.3% 11%;
-    --primary-foreground: 210 20% 98%;
-    --secondary: 220 14.3% 95.9%;
-    --secondary-foreground: 220.9 39.3% 11%;
-    --muted: 220 14.3% 95.9%;
-    --muted-foreground: 220 8.9% 46.1%;
-    --accent: 220 14.3% 95.9%;
-    --accent-foreground: 220.9 39.3% 11%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 20% 98%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 224 71.4% 4.1%;
+    /* Modo claro: GitHub-light neutro */
+    --background:   210 17% 98%;
+    --surface:      0 0% 100%;
+    --surface-2:    210 14% 96%;
+    --border:       210 18% 87%;
+
+    --foreground:   215 28% 17%;
+    --muted-fg:     215 14% 45%;
+
+    --primary:      199 72% 42%;      /* cyan medio */
+    --primary-fg:   0 0% 100%;
+    --primary-hover:199 72% 36%;
+
+    --accent:       199 72% 42%;
+    --accent-fg:    0 0% 100%;
+
+    --success:      142 70% 30%;
+    --success-fg:   0 0% 100%;
+    --warning:      38 95% 40%;
+    --warning-fg:   0 0% 100%;
+    --danger:       0 72% 48%;
+    --danger-fg:    0 0% 100%;
+    --info:         205 88% 38%;
+    --info-fg:      0 0% 100%;
+
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 224 71.4% 4.1%;
-    --foreground: 210 20% 98%;
-    --card: 224 71.4% 4.1%;
-    --card-foreground: 210 20% 98%;
-    --popover: 224 71.4% 4.1%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 210 20% 98%;
-    --primary-foreground: 220.9 39.3% 11%;
-    --secondary: 215 27.9% 16.9%;
-    --secondary-foreground: 210 20% 98%;
-    --muted: 215 27.9% 16.9%;
-    --muted-foreground: 217.9 10.6% 64.9%;
-    --accent: 215 27.9% 16.9%;
-    --accent-foreground: 210 20% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 20% 98%;
-    --border: 215 27.9% 16.9%;
-    --input: 215 27.9% 16.9%;
-    --ring: 216 12.2% 83.9%;
+    /* Modo oscuro: GitHub-dark + cyan */
+    --background:   216 28% 7%;       /* #0d1117 */
+    --surface:      215 22% 11%;      /* #161b22 */
+    --surface-2:    215 18% 15%;      /* #21262d */
+    --border:       215 14% 22%;      /* #30363d */
+
+    --foreground:   213 27% 90%;      /* #e6edf3 */
+    --muted-fg:     215 14% 57%;      /* #8b949e */
+
+    --primary:      193 78% 52%;      /* #29c5e8 cyan */
+    --primary-fg:   216 28% 7%;
+    --primary-hover:193 78% 44%;
+
+    --accent:       193 78% 52%;
+    --accent-fg:    216 28% 7%;
+
+    --success:      142 68% 42%;
+    --success-fg:   216 28% 7%;
+    --warning:      38 95% 55%;
+    --warning-fg:   216 28% 7%;
+    --danger:       0 72% 60%;
+    --danger-fg:    216 28% 7%;
+    --info:         205 88% 58%;
+    --info-fg:      216 28% 7%;
   }
 }
 
+/* ─── Mapeamos a utilidades de Tailwind v4 ───────────────────────── */
 @theme inline {
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
+  /* Superficies */
+  --color-background:   hsl(var(--background));
+  --color-surface:      hsl(var(--surface));
+  --color-surface-2:    hsl(var(--surface-2));
+  --color-border:       hsl(var(--border));
+
+  /* Texto */
+  --color-foreground:   hsl(var(--foreground));
+  --color-muted:        hsl(var(--muted-fg));
+
+  /* Primario / acento */
+  --color-primary:      hsl(var(--primary));
+  --color-primary-fg:   hsl(var(--primary-fg));
+
+  /* Semánticos */
+  --color-success:      hsl(var(--success));
+  --color-success-fg:   hsl(var(--success-fg));
+  --color-warning:      hsl(var(--warning));
+  --color-warning-fg:   hsl(var(--warning-fg));
+  --color-danger:       hsl(var(--danger));
+  --color-danger-fg:    hsl(var(--danger-fg));
+  --color-info:         hsl(var(--info));
+  --color-info-fg:      hsl(var(--info-fg));
+
+  /* Tipografía */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Radio global */
   --radius: var(--radius);
 }
 
+/* ─── Reset base ─────────────────────────────────────────────────── */
 @layer base {
   * {
     border-color: hsl(var(--border));
+    outline-color: hsl(var(--primary));
   }
+
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-fg));
   }
 }

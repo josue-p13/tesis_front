@@ -1,55 +1,69 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
-import { Upload, FileText, CheckCircle, AlertCircle, Loader2, Key, BookOpen, RefreshCw } from "lucide-react";
+import { useState, useCallback } from "react";
+import {
+  FileText,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
+  RefreshCw,
+  BookMarked,
+} from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { EstadoBadge } from "@/components/estado-badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import { UploadZone } from "@/components/upload/upload-zone";
+import { SerperConfig } from "@/components/upload/serper-config";
+import { RefExtraidaCard } from "@/components/referencias/ref-extraida-card";
+import { RefValidadaCard } from "@/components/referencias/ref-validada-card";
+import { StatsBar } from "@/components/referencias/stats-bar";
+
 import { extraerReferencias, validarReferencias } from "@/services/api";
 import type { ExtraerResponse, ValidarResponse } from "@/types/api";
-import { cn } from "@/lib/utils";
 
-type Paso = "upload" | "extraidas" | "validadas";
+/* ─── Tipos internos ──────────────────────────────────────────── */
+type Paso = "upload" | "resultados";
+type TabId = "extraidas" | "validadas";
 
+/* ─── Componente principal ────────────────────────────────────── */
 export function App() {
+  /* Flujo */
   const [paso, setPaso] = useState<Paso>("upload");
-  const [serperApiKey, setSerperApiKey] = useState("");
-  const [usarSerper, setUsarSerper] = useState(false);
-  const [pdf, setPdf] = useState<File | null>(null);
-  const [arrastrandoPDF, setArrastrandoPDF] = useState(false);
+  const [tabActiva, setTabActiva] = useState<TabId>("extraidas");
 
+  /* Archivo */
+  const [pdf, setPdf] = useState<File | null>(null);
+  const [dragging, setDragging] = useState(false);
+
+  /* Serper */
+  const [usarSerper, setUsarSerper] = useState(false);
+  const [serperKey, setSerperKey] = useState("");
+
+  /* Estado de carga */
   const [loadingExtraer, setLoadingExtraer] = useState(false);
   const [loadingValidar, setLoadingValidar] = useState(false);
   const [errorExtraer, setErrorExtraer] = useState<string | null>(null);
   const [errorValidar, setErrorValidar] = useState<string | null>(null);
 
-  const [extraerResult, setExtraerResult] = useState<ExtraerResponse | null>(null);
-  const [validarResult, setValidarResult] = useState<ValidarResponse | null>(null);
+  /* Datos */
+  const [extraerData, setExtraerData] = useState<ExtraerResponse | null>(null);
+  const [validarData, setValidarData] = useState<ValidarResponse | null>(null);
 
-  const [tabActiva, setTabActiva] = useState<"extraidas" | "validadas">("extraidas");
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const onDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setArrastrandoPDF(false);
-    const file = e.dataTransfer.files[0];
-    if (file?.type === "application/pdf") setPdf(file);
-  }, []);
+  /* ── Handlers ─────────────────────────────────────────────── */
+  const handleFile = useCallback((file: File) => setPdf(file), []);
+  const handleClear = useCallback(() => setPdf(null), []);
 
   const handleExtraer = async () => {
     if (!pdf) return;
     setLoadingExtraer(true);
     setErrorExtraer(null);
     try {
-      const result = await extraerReferencias(pdf, serperApiKey, usarSerper);
-      setExtraerResult(result);
-      setValidarResult(null);
-      setPaso("extraidas");
+      const data = await extraerReferencias(pdf, serperKey, usarSerper);
+      setExtraerData(data);
+      setValidarData(null);
+      setPaso("resultados");
       setTabActiva("extraidas");
     } catch (e) {
       setErrorExtraer(e instanceof Error ? e.message : "Error desconocido");
@@ -59,17 +73,16 @@ export function App() {
   };
 
   const handleValidar = async () => {
-    if (!extraerResult) return;
+    if (!extraerData) return;
     setLoadingValidar(true);
     setErrorValidar(null);
     try {
-      const result = await validarReferencias(
-        extraerResult.referencias,
-        extraerResult.serper_api_key,
-        extraerResult.usar_serper
+      const data = await validarReferencias(
+        extraerData.referencias,
+        extraerData.serper_api_key,
+        extraerData.usar_serper
       );
-      setValidarResult(result);
-      setPaso("validadas");
+      setValidarData(data);
       setTabActiva("validadas");
     } catch (e) {
       setErrorValidar(e instanceof Error ? e.message : "Error desconocido");
@@ -81,384 +94,208 @@ export function App() {
   const handleReset = () => {
     setPaso("upload");
     setPdf(null);
-    setExtraerResult(null);
-    setValidarResult(null);
+    setExtraerData(null);
+    setValidarData(null);
     setErrorExtraer(null);
     setErrorValidar(null);
   };
 
+  /* ── Render ───────────────────────────────────────────────── */
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-5xl px-4 py-8 space-y-6">
+    <div className="mx-auto max-w-4xl px-4 py-8 space-y-6">
 
-        {/* Paso 1: Upload */}
-        {paso === "upload" && (
-          <div className="space-y-6">
-            {/* Zona de drop */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5" />
-                  Subir PDF
-                </CardTitle>
-                <CardDescription>
-                  Sube el PDF del que quieres extraer y validar las referencias bibliográficas.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div
-                  className={cn(
-                    "border-2 border-dashed rounded-lg p-10 text-center cursor-pointer transition-colors",
-                    arrastrandoPDF
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/50 hover:bg-muted/30"
-                  )}
-                  onDragOver={(e) => { e.preventDefault(); setArrastrandoPDF(true); }}
-                  onDragLeave={() => setArrastrandoPDF(false)}
-                  onDrop={onDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="application/pdf"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) setPdf(file);
-                    }}
-                  />
-                  {pdf ? (
-                    <div className="flex flex-col items-center gap-2">
-                      <FileText className="h-10 w-10 text-primary" />
-                      <p className="font-medium">{pdf.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {(pdf.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                      <Upload className="h-10 w-10" />
-                      <p className="font-medium">Arrastra un PDF aquí o haz clic para seleccionar</p>
-                      <p className="text-sm">Solo archivos .pdf</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+      {/* ══════════════════════ PASO: UPLOAD ══════════════════════ */}
+      {paso === "upload" && (
+        <div className="space-y-4">
+          {/* Encabezado de sección */}
+          <div>
+            <h1 className="text-xl font-semibold">Extraer referencias</h1>
+            <p className="text-sm text-muted mt-0.5">
+              Sube un PDF y el sistema extraerá y validará sus referencias bibliográficas.
+            </p>
+          </div>
 
-            {/* Configuración Serper */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Key className="h-5 w-5" />
-                  Google Scholar (opcional)
-                </CardTitle>
-                <CardDescription>
-                  Activa Serper para usar Google Scholar como fuente adicional de validación.
-                  Consigue tu API key gratis en serper.dev
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <Switch
-                    id="usar-serper"
-                    checked={usarSerper}
-                    onCheckedChange={setUsarSerper}
-                  />
-                  <label htmlFor="usar-serper" className="text-sm font-medium cursor-pointer">
-                    Usar Google Scholar via Serper
-                  </label>
-                </div>
-                {usarSerper && (
-                  <Input
-                    type="password"
-                    placeholder="Serper API Key (e.g. abc123xyz...)"
-                    value={serperApiKey}
-                    onChange={(e) => setSerperApiKey(e.target.value)}
-                  />
-                )}
-              </CardContent>
-            </Card>
+          {/* Zona de drop */}
+          <UploadZone
+            file={pdf}
+            dragging={dragging}
+            onFile={handleFile}
+            onClear={handleClear}
+            onDragEnter={() => setDragging(true)}
+            onDragLeave={() => setDragging(false)}
+          />
 
-            {errorExtraer && (
-              <div className="flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
-                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                <span>{errorExtraer}</span>
-              </div>
+          {/* Serper */}
+          <SerperConfig
+            usarSerper={usarSerper}
+            apiKey={serperKey}
+            onToggle={setUsarSerper}
+            onKeyChange={setSerperKey}
+          />
+
+          {/* Error */}
+          {errorExtraer && (
+            <div className="flex items-start gap-2.5 rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
+              <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+              <span>{errorExtraer}</span>
+            </div>
+          )}
+
+          {/* Botón */}
+          <Button
+            size="lg"
+            className="w-full"
+            disabled={!pdf || loadingExtraer}
+            onClick={handleExtraer}
+          >
+            {loadingExtraer ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Extrayendo referencias…&nbsp;
+                <span className="text-primary-fg/60 text-xs">(puede tardar ~30 s)</span>
+              </>
+            ) : (
+              <>
+                <FileText className="h-4 w-4" />
+                Extraer referencias
+              </>
             )}
+          </Button>
+        </div>
+      )}
 
-            <Button
-              size="lg"
-              className="w-full"
-              disabled={!pdf || loadingExtraer}
-              onClick={handleExtraer}
-            >
-              {loadingExtraer ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Extrayendo referencias... (puede tardar hasta 30 seg)
-                </>
-              ) : (
-                <>
-                  <FileText className="h-4 w-4" />
-                  Extraer referencias
-                </>
-              )}
+      {/* ══════════════════════ PASO: RESULTADOS ══════════════════ */}
+      {paso === "resultados" && extraerData && (
+        <div className="space-y-4">
+
+          {/* Cabecera del documento */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <BookMarked className="h-4 w-4 text-primary shrink-0" />
+                <h1 className="text-base font-semibold truncate">{pdf?.name}</h1>
+                <Badge variant="secondary">{extraerData.estilo_citacion.nombre}</Badge>
+              </div>
+              <p className="text-xs text-muted mt-0.5 pl-6">
+                {extraerData.estilo_citacion.descripcion}
+              </p>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleReset}>
+              <RefreshCw className="h-3.5 w-3.5" />
+              Nuevo PDF
             </Button>
           </div>
-        )}
 
-        {/* Pasos 2 y 3: Resultados en pestañas */}
-        {(paso === "extraidas" || paso === "validadas") && extraerResult && (
-          <div className="space-y-4">
-            {/* Header con botón de resetear */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold">{pdf?.name}</h2>
-                <p className="text-sm text-muted-foreground">
-                  Estilo:{" "}
-                  <span className="font-medium">{extraerResult.estilo_citacion.nombre}</span>
-                  {" — "}
-                  {extraerResult.estilo_citacion.descripcion}
-                </p>
-              </div>
-              <Button variant="outline" size="sm" onClick={handleReset}>
-                <RefreshCw className="h-4 w-4" />
-                Nuevo PDF
-              </Button>
-            </div>
+          {/* Tabs */}
+          <Tabs value={tabActiva} onValueChange={(v) => setTabActiva(v as TabId)}>
+            <TabsList>
+              <TabsTrigger value="extraidas">
+                <FileText className="h-3.5 w-3.5" />
+                Extraídas
+                <Badge variant="secondary">{extraerData.total_referencias}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="validadas">
+                <CheckCircle className="h-3.5 w-3.5" />
+                Validadas
+                {validarData && (
+                  <Badge variant="secondary">{validarData.total}</Badge>
+                )}
+              </TabsTrigger>
+            </TabsList>
 
-            <Tabs value={tabActiva} onValueChange={(v) => setTabActiva(v as "extraidas" | "validadas")}>
-              <TabsList>
-                <TabsTrigger value="extraidas">
-                  Referencias extraídas
-                  <Badge variant="secondary" className="ml-2">
-                    {extraerResult.total_referencias}
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger value="validadas" disabled={!validarResult && !loadingValidar}>
-                  Referencias validadas
-                  {validarResult && (
-                    <Badge variant="secondary" className="ml-2">
-                      {validarResult.total}
-                    </Badge>
-                  )}
-                </TabsTrigger>
-              </TabsList>
+            {/* ── Tab: Extraídas ────────────────────────────────── */}
+            <TabsContent value="extraidas">
+              <div className="mt-4 space-y-4">
 
-              {/* Tab: Extraídas */}
-              <TabsContent value="extraidas">
-                <div className="space-y-4 mt-4">
-                  {/* Botón validar */}
-                  {!validarResult && (
-                    <Card>
-                      <CardContent className="pt-6 space-y-3">
-                        {errorValidar && (
-                          <div className="flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-                            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                            <span>{errorValidar}</span>
-                          </div>
+                {/* Botón validar (si aún no se validó) */}
+                {!validarData && (
+                  <div className="rounded-lg border border-border bg-surface px-5 py-4 space-y-3">
+                    {errorValidar && (
+                      <div className="flex items-start gap-2 rounded border border-danger/40 bg-danger/10 px-3 py-2 text-xs text-danger">
+                        <AlertCircle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                        {errorValidar}
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-sm font-medium">¿Validar contra bases de datos académicas?</p>
+                        <p className="text-xs text-muted">
+                          OpenAlex · CrossRef · Semantic Scholar · PubMed · CORE · Google Books
+                          {extraerData.usar_serper && " · Google Scholar"}
+                        </p>
+                      </div>
+                      <Button
+                        onClick={handleValidar}
+                        disabled={loadingValidar}
+                        className="shrink-0"
+                      >
+                        {loadingValidar ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Validando…
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="h-4 w-4" />
+                            Validar {extraerData.total_referencias} refs
+                          </>
                         )}
-                        <Button
-                          className="w-full"
-                          onClick={handleValidar}
-                          disabled={loadingValidar}
-                        >
-                          {loadingValidar ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                              Validando contra bases de datos académicas... (puede tardar varios minutos)
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircle className="h-4 w-4" />
-                              Validar {extraerResult.total_referencias} referencias
-                            </>
-                          )}
-                        </Button>
-                        {extraerResult.usar_serper && (
-                          <p className="text-xs text-center text-muted-foreground">
-                            Google Scholar via Serper activado
-                          </p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Lista de referencias extraídas */}
-                  <div className="space-y-3">
-                    {extraerResult.referencias.map((ref, i) => (
-                      <Card key={i}>
-                        <CardContent className="pt-4 pb-4">
-                          <div className="space-y-2">
-                            <div className="flex items-start gap-2">
-                              <Badge variant="outline" className="shrink-0 mt-0.5">
-                                #{i + 1}
-                              </Badge>
-                              <p className="font-medium text-sm leading-snug">
-                                {ref.titulo || <span className="text-muted-foreground italic">Sin título</span>}
-                              </p>
-                            </div>
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground pl-8">
-                              {ref.autores && <span><span className="font-medium text-foreground">Autores:</span> {ref.autores}</span>}
-                              {ref.año && <span><span className="font-medium text-foreground">Año:</span> {ref.año}</span>}
-                              {ref.publicacion && <span><span className="font-medium text-foreground">Publicación:</span> {ref.publicacion}</span>}
-                              {ref.doi && <span><span className="font-medium text-foreground">DOI:</span> {ref.doi}</span>}
-                              {ref.volumen && <span><span className="font-medium text-foreground">Volumen:</span> {ref.volumen}</span>}
-                              {ref.paginas && <span><span className="font-medium text-foreground">Páginas:</span> {ref.paginas}</span>}
-                              {ref.url && (
-                                <span className="col-span-2">
-                                  <span className="font-medium text-foreground">URL:</span>{" "}
-                                  <a href={ref.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate">
-                                    {ref.url}
-                                  </a>
-                                </span>
-                              )}
-                            </div>
-                            <details className="pl-8">
-                              <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
-                                Ver texto original
-                              </summary>
-                              <p className="text-xs text-muted-foreground mt-1 bg-muted/50 rounded p-2 font-mono leading-relaxed">
-                                {ref.raw}
-                              </p>
-                            </details>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              </TabsContent>
-
-              {/* Tab: Validadas */}
-              <TabsContent value="validadas">
-                {validarResult ? (
-                  <div className="space-y-4 mt-4">
-                    {/* Estadísticas */}
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                      <Card>
-                        <CardContent className="pt-4 pb-4 text-center">
-                          <p className="text-2xl font-bold">{validarResult.encontradas}</p>
-                          <p className="text-xs text-muted-foreground">Encontradas</p>
-                        </CardContent>
-                      </Card>
-                      <Card>
-                        <CardContent className="pt-4 pb-4 text-center">
-                          <p className="text-2xl font-bold text-destructive">{validarResult.no_encontradas}</p>
-                          <p className="text-xs text-muted-foreground">No encontradas</p>
-                        </CardContent>
-                      </Card>
-                      <Card>
-                        <CardContent className="pt-4 pb-4 text-center">
-                          <p className="text-2xl font-bold text-green-600">{validarResult.porcentaje_verificadas}%</p>
-                          <p className="text-xs text-muted-foreground">Verificadas</p>
-                        </CardContent>
-                      </Card>
-                      <Card>
-                        <CardContent className="pt-4 pb-4 text-center">
-                          <p className="text-2xl font-bold">{validarResult.total}</p>
-                          <p className="text-xs text-muted-foreground">Total</p>
-                        </CardContent>
-                      </Card>
+                      </Button>
                     </div>
-
-                    {/* Detalle BD y Scholar */}
-                    <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                      <span>
-                        BD cache: <span className="font-medium text-foreground">{validarResult.estadisticas_bd.servidas_desde_bd}</span> servidas,{" "}
-                        <span className="font-medium text-foreground">{validarResult.estadisticas_bd.nuevas_guardadas_en_bd}</span> guardadas
-                      </span>
-                      {validarResult.estadisticas_google_scholar.serper_habilitado && (
-                        <span>
-                          · Google Scholar: <span className="font-medium text-foreground">{validarResult.estadisticas_google_scholar.encontradas_por_serper}</span> encontradas
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Lista de referencias validadas */}
-                    <div className="space-y-3">
-                      {validarResult.referencias.map((ref) => (
-                        <Card key={ref.indice}>
-                          <CardContent className="pt-4 pb-4">
-                            <div className="space-y-2">
-                              <div className="flex items-start gap-2 flex-wrap">
-                                <Badge variant="outline" className="shrink-0 mt-0.5">
-                                  #{ref.indice}
-                                </Badge>
-                                <EstadoBadge estado={ref.estado} />
-                                {ref.validacion.fuente && (
-                                  <Badge variant="secondary" className="text-xs">
-                                    {ref.validacion.fuente}
-                                  </Badge>
-                                )}
-                              </div>
-
-                              <p className="font-medium text-sm leading-snug">
-                                {ref.validacion.titulo_verificado || ref.titulo_original || (
-                                  <span className="text-muted-foreground italic">Sin título</span>
-                                )}
-                              </p>
-
-                              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                                {ref.autores && <span><span className="font-medium text-foreground">Autores:</span> {ref.autores}</span>}
-                                {ref.año && <span><span className="font-medium text-foreground">Año:</span> {ref.año}</span>}
-                                {(ref.doi_original || ref.doi_sugerido) && (
-                                  <span className="col-span-2">
-                                    <span className="font-medium text-foreground">DOI:</span>{" "}
-                                    {ref.doi_original || ref.doi_sugerido}
-                                    {!ref.doi_original && ref.doi_sugerido && (
-                                      <Badge variant="info" className="ml-1 text-[10px]">sugerido</Badge>
-                                    )}
-                                  </span>
-                                )}
-                                {ref.validacion.citaciones !== undefined && ref.validacion.citaciones > 0 && (
-                                  <span><span className="font-medium text-foreground">Citas:</span> {ref.validacion.citaciones}</span>
-                                )}
-                                {ref.validacion.url && (
-                                  <span className="col-span-2">
-                                    <a
-                                      href={ref.validacion.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-primary hover:underline"
-                                    >
-                                      Ver publicación
-                                    </a>
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mt-4 flex flex-col items-center justify-center gap-3 py-16 text-muted-foreground">
-                    {loadingValidar ? (
-                      <>
-                        <Loader2 className="h-8 w-8 animate-spin" />
-                        <p>Validando referencias contra bases de datos académicas...</p>
-                        <p className="text-xs">Esto puede tardar varios minutos</p>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="h-8 w-8" />
-                        <p>Aún no has validado las referencias</p>
-                        <Button variant="outline" onClick={() => setTabActiva("extraidas")}>
-                          Ir a referencias extraídas
-                        </Button>
-                      </>
+                    {loadingValidar && (
+                      <p className="text-xs text-muted text-center">
+                        Esto puede tardar varios minutos para PDFs grandes…
+                      </p>
                     )}
                   </div>
                 )}
-              </TabsContent>
-            </Tabs>
-          </div>
-        )}
-      </div>
+
+                {/* Lista */}
+                <div className="space-y-2">
+                  {extraerData.referencias.map((ref, i) => (
+                    <RefExtraidaCard key={i} ref={ref} index={i + 1} />
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* ── Tab: Validadas ────────────────────────────────── */}
+            <TabsContent value="validadas">
+              {validarData ? (
+                <div className="mt-4 space-y-4">
+                  <StatsBar data={validarData} />
+                  <div className="space-y-2">
+                    {validarData.referencias.map((ref) => (
+                      <RefValidadaCard key={ref.indice} ref={ref} />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-4 flex flex-col items-center gap-3 py-20 text-muted">
+                  {loadingValidar ? (
+                    <>
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <p className="text-sm">Validando referencias…</p>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-8 w-8" />
+                      <p className="text-sm">Todavía no has validado las referencias.</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setTabActiva("extraidas")}
+                      >
+                        Ir a referencias extraídas
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+      )}
     </div>
   );
 }

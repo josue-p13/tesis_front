@@ -38,6 +38,18 @@ export async function validarReferencias(
 
   if (!res.ok) {
     const text = await res.text();
+
+    const esErrorSerper =
+      res.status === 500 &&
+      /serper|api.?key|401|403/i.test(text);
+
+    if (esErrorSerper) {
+      throw new Error(
+        "La API key de Serper ingresada no existe o no tiene créditos disponibles. " +
+        "Revisa tu key en serper.dev antes de intentarlo de nuevo."
+      );
+    }
+
     throw new Error(`Error ${res.status}: ${text}`);
   }
 
