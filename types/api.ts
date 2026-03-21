@@ -34,6 +34,7 @@ export interface ValidacionDetalle {
   url?: string;
   autores_verificados?: string;
   desde_bd?: boolean;
+  es_link_busqueda?: boolean;
 }
 
 export interface ReferenciaValidada {

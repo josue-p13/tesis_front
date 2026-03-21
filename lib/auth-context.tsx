@@ -23,7 +23,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  // Cargar usuario al montar el componente
   useEffect(() => {
     loadUser();
   }, []);
@@ -32,11 +31,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true);
       const response = await authService.getCurrentUser();
-      
+
       if (response.success && response.user) {
         setUser(response.user);
       } else {
+        try {
+          await authService.logout();
+        } catch (e) {
+          console.error("Error calling logout:", e);
+        }
         setUser(null);
+        router.replace("/login");
       }
     } catch (err) {
       console.error("Error loading user:", err);

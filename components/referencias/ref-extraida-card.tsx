@@ -22,10 +22,10 @@ function MetaChip({
 }) {
   if (!value) return null;
   return (
-    <div className="flex items-center gap-1.5 text-xs text-muted">
+    <div className="flex items-center gap-1.5 text-xs text-muted min-w-0">
       <Icon className="h-3 w-3 shrink-0" />
-      <span className="font-medium text-foreground/70">{label}:</span>
-      <span className="truncate">{value}</span>
+      <span className="font-medium text-foreground/70 shrink-0">{label}:</span>
+      <span className="truncate" title={value}>{value}</span>
     </div>
   );
 }
@@ -52,7 +52,7 @@ export function RefExtraidaCard({ ref: referencia, index }: RefExtraidaCardProps
             )}
           </p>
 
-          <div className="flex flex-wrap gap-x-4 gap-y-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1">
             <MetaChip icon={Users}    label="Autores"  value={referencia.autores} />
             <MetaChip icon={Calendar} label="Año"      value={referencia.año} />
             <MetaChip icon={BookOpen} label="Revista"  value={referencia.publicacion} />

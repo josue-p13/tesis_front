@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   FileText,
   CheckCircle,
@@ -10,6 +11,7 @@ import {
   BookMarked,
 } from "lucide-react";
 
+import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,6 +31,9 @@ type TabId = "extraidas" | "validadas";
 
 /* ─── Componente principal ────────────────────────────────────── */
 export function App() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
   /* Flujo */
   const [paso, setPaso] = useState<Paso>("upload");
   const [tabActiva, setTabActiva] = useState<TabId>("extraidas");
@@ -55,7 +60,16 @@ export function App() {
   const handleFile = useCallback((file: File) => setPdf(file), []);
   const handleClear = useCallback(() => setPdf(null), []);
 
-  const handleExtraer = async () => {
+  const handleReset = useCallback(() => {
+    setPaso("upload");
+    setPdf(null);
+    setExtraerData(null);
+    setValidarData(null);
+    setErrorExtraer(null);
+    setErrorValidar(null);
+  }, []);
+
+  const handleExtraer = useCallback(async () => {
     if (!pdf) return;
     setLoadingExtraer(true);
     setErrorExtraer(null);
@@ -70,9 +84,9 @@ export function App() {
     } finally {
       setLoadingExtraer(false);
     }
-  };
+  }, [pdf, serperKey, usarSerper]);
 
-  const handleValidar = async () => {
+  const handleValidar = useCallback(async () => {
     if (!extraerData) return;
     setLoadingValidar(true);
     setErrorValidar(null);
@@ -89,16 +103,14 @@ export function App() {
     } finally {
       setLoadingValidar(false);
     }
-  };
+  }, [extraerData]);
 
-  const handleReset = () => {
-    setPaso("upload");
-    setPdf(null);
-    setExtraerData(null);
-    setValidarData(null);
-    setErrorExtraer(null);
-    setErrorValidar(null);
-  };
+  useEffect(() => {
+    if (!loading && !user) router.replace("/login");
+  }, [loading, user, router]);
+
+  if (loading) return <div className="mx-auto max-w-4xl px-4 py-8"><p className="text-center">Cargando sesión…</p></div>;
+  if (!user) return null;
 
   /* ── Render ───────────────────────────────────────────────── */
   return (

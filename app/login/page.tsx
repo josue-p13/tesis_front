@@ -1,25 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Lock, Mail } from "lucide-react";
+import { Lock, Mail, Chrome, CheckCircle2 } from "lucide-react";
+import { Suspense } from "react";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [verifyEmail, setVerifyEmail] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+
+  useEffect(() => {
+    const status = searchParams.get("status");
+    const email = searchParams.get("email");
+
+    if (status === "verify-email" && email) {
+      setVerifyEmail(email);
+    } else if (status === "pending-verification") {
+      setError("Por favor verifica tu correo antes de iniciar sesión.");
+    } else if (status === "error") {
+      setError("Hubo un error con el inicio de sesión de Google.");
+    }
+  }, [searchParams]);
+
+  const handleGoogleLogin = () => {
+    // Redirigir al endpoint de login del backend
+    window.location.href = "http://localhost:8000/auth/login/google";
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
@@ -54,6 +76,38 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
+  if (verifyEmail) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md p-8 text-center space-y-6">
+          <div className="flex justify-center">
+            <div className="rounded-full bg-green-100 p-3">
+              <CheckCircle2 className="h-10 w-10 text-green-600" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-semibold text-foreground">
+              ¡Cuenta creada!
+            </h1>
+            <p className="text-sm text-muted">
+              Te hemos enviado un correo de verificación a <br />
+              <strong className="text-foreground">{verifyEmail}</strong>. Por favor revisa tu bandeja de entrada y haz clic en el enlace para activar tu cuenta.
+            </p>
+          </div>
+          <Button 
+            className="w-full" 
+            onClick={() => {
+              setVerifyEmail(null);
+              router.push("/login");
+            }}
+          >
+            Ir a iniciar sesión
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -124,6 +178,28 @@ export default function LoginPage() {
             </Button>
           </form>
 
+          {/* Divisor OAuth */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-muted" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted">O continuar con</span>
+            </div>
+          </div>
+
+          {/* Google Login Button */}
+          <Button
+            variant="outline"
+            type="button"
+            className="w-full flex items-center justify-center gap-2"
+            onClick={handleGoogleLogin}
+            disabled={isLoading}
+          >
+            <Chrome className="h-4 w-4 text-red-500" />
+             Iniciar sesión con Google
+          </Button>
+
           {/* Footer */}
           <div className="space-y-4">
             <div className="text-center text-sm">
@@ -139,5 +215,13 @@ export default function LoginPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Cargando...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }

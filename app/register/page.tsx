@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Lock, Mail, User, CheckCircle2 } from "lucide-react";
+import { Lock, Mail, User, CheckCircle2, Chrome } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -23,6 +23,11 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
   });
+
+  const handleGoogleLogin = () => {
+    // Redirigir al backend para OAuth
+    window.location.href = "http://localhost:8000/auth/login/google";
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
@@ -199,6 +204,28 @@ export default function RegisterPage() {
               {isLoading ? "Creando cuenta..." : "Crear cuenta"}
             </Button>
           </form>
+
+          {/* Divisor OAuth */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-muted" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted">O registrarse con</span>
+            </div>
+          </div>
+
+          {/* Google Register Button */}
+          <Button
+            variant="outline"
+            type="button"
+            className="w-full flex items-center justify-center gap-2"
+            onClick={handleGoogleLogin}
+            disabled={isLoading}
+          >
+            <Chrome className="h-4 w-4 text-red-500" />
+             Registrarse con Google
+          </Button>
 
           {/* Footer */}
           <div className="text-center text-sm">
