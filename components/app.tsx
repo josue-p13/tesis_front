@@ -9,6 +9,7 @@ import {
   Loader2,
   RefreshCw,
   BookMarked,
+  Plus,
 } from "lucide-react";
 
 import { useAuth } from "@/lib/auth-context";
@@ -23,11 +24,24 @@ import { RefValidadaCard } from "@/components/referencias/ref-validada-card";
 import { StatsBar } from "@/components/referencias/stats-bar";
 
 import { extraerReferencias, validarReferencias } from "@/services/api";
-import type { ExtraerResponse, ValidarResponse } from "@/types/api";
+import type { ExtraerResponse, ValidarResponse, ReferenciaCruda } from "@/types/api";
 
 /* ─── Tipos internos ──────────────────────────────────────────── */
 type Paso = "upload" | "resultados";
 type TabId = "extraidas" | "validadas";
+
+/* ─── Constantes ─────────────────────────────────────────────── */
+const EMPTY_REFERENCE: ReferenciaCruda = {
+  titulo: "",
+  autores: "",
+  año: "",
+  publicacion: "",
+  doi: "",
+  url: "",
+  volumen: "",
+  paginas: "",
+  raw: "Referencia añadida manualmente"
+};
 
 /* ─── Componente principal ────────────────────────────────────── */
 export function App() {
@@ -55,6 +69,40 @@ export function App() {
   /* Datos */
   const [extraerData, setExtraerData] = useState<ExtraerResponse | null>(null);
   const [validarData, setValidarData] = useState<ValidarResponse | null>(null);
+
+  /* ── Handlers de Edición/Eliminación ─────────────────────────── */
+  const handleUpdateRef = useCallback((index: number, updated: ReferenciaCruda) => {
+    setExtraerData(prev => {
+      if (!prev) return prev;
+      const nuevasRefs = [...prev.referencias];
+      nuevasRefs[index] = updated;
+      return { ...prev, referencias: nuevasRefs };
+    });
+  }, []);
+
+  const handleDeleteRef = useCallback((index: number) => {
+    setExtraerData(prev => {
+      if (!prev) return prev;
+      const nuevasRefs = prev.referencias.filter((_, i) => i !== index);
+      return { 
+        ...prev, 
+        referencias: nuevasRefs,
+        total_referencias: nuevasRefs.length 
+      };
+    });
+  }, []);
+
+  const handleAddRef = useCallback(() => {
+    setExtraerData(prev => {
+      if (!prev) return prev;
+      return { 
+        ...prev, 
+        referencias: [EMPTY_REFERENCE, ...prev.referencias],
+        total_referencias: prev.total_referencias + 1
+      };
+    });
+    setTabActiva("extraidas");
+  }, []);
 
   /* ── Handlers ─────────────────────────────────────────────── */
   const handleFile = useCallback((file: File) => setPdf(file), []);
@@ -219,6 +267,21 @@ export function App() {
             <TabsContent value="extraidas">
               <div className="mt-4 space-y-4">
 
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                    Referencias Detectadas
+                  </h2>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleAddRef}
+                    className="h-8 text-xs border-primary/30 hover:bg-primary/5"
+                  >
+                    <Plus className="h-3.5 w-3.5 mr-1" />
+                    Añadir Referencia
+                  </Button>
+                </div>
+
                 {/* Botón validar (si aún no se validó) */}
                 {!validarData && (
                   <div className="rounded-lg border border-border bg-surface px-5 py-4 space-y-3">
@@ -265,7 +328,13 @@ export function App() {
                 {/* Lista */}
                 <div className="space-y-2">
                   {extraerData.referencias.map((ref, i) => (
-                    <RefExtraidaCard key={i} ref={ref} index={i + 1} />
+                    <RefExtraidaCard 
+                      key={`${i}-${ref.titulo}`} 
+                      referencia={ref} 
+                      index={i + 1} 
+                      onUpdate={(updated) => handleUpdateRef(i, updated)}
+                      onDelete={() => handleDeleteRef(i)}
+                    />
                   ))}
                 </div>
               </div>

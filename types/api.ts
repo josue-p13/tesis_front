@@ -45,6 +45,7 @@ export interface ReferenciaValidada {
   doi_original: string;
   estado: string;
   doi_sugerido?: string;
+  mensaje_alerta?: string;
   validacion: ValidacionDetalle;
 }
 
