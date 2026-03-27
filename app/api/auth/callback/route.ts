@@ -55,13 +55,8 @@ export async function GET(req: NextRequest) {
 
   // Si intentaba hacer LOGIN
   if (!user.emailVerified) {
-    // Si es OAuth y el usuario existe pero no está verificado, lo verificamos automáticamente
-    // ya que el proveedor (Google/MS) ya verificó el email.
-    await usersCollection.updateOne(
-      { _id: user._id },
-      { $set: { emailVerified: true, updatedAt: new Date() } }
-    );
-    user.emailVerified = true;
+    // Mantener el flujo original: exigir verificación por correo
+    return NextResponse.redirect(new URL("/login?status=pending-verification", req.url));
   }
 
   // LOGIN EXITOSO

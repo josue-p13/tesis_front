@@ -13,9 +13,6 @@ export async function middleware(request: NextRequest) {
 
   // Obtener el token de las cookies
   const token = request.cookies.get("auth-token")?.value;
-  
-  // DEBUG: Log para ver qué está pasando
-  console.log(`[Middleware] Path: ${pathname}, Token exists: ${!!token}`);
 
   // Verificar si el usuario está autenticado usando la versión Edge-compatible
   let isAuthenticated = false;
@@ -23,18 +20,14 @@ export async function middleware(request: NextRequest) {
     try {
       const payload = await verifyTokenEdge(token);
       isAuthenticated = payload !== null;
-    } catch (error) {
-      console.error("[Middleware] Error verifying token:", error);
+    } catch {
       isAuthenticated = false;
     }
   }
-  
-  console.log(`[Middleware] Path: ${pathname}, Authenticated: ${isAuthenticated}`);
 
   // Si el usuario está autenticado y trata de acceder a rutas de auth (login/register)
   // redirigirlo al home PRIMERO (antes de cualquier otra validación)
   if (isAuthenticated && authRoutes.some((route) => pathname.startsWith(route))) {
-    console.log(`[Middleware] Usuario autenticado en ${pathname}, redirigiendo a /`);
     return NextResponse.redirect(new URL("/", request.url));
   }
 

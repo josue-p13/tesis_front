@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { User, RegisterData, LoginData } from "@/types/user";
 import * as authService from "@/services/auth.service";
 
@@ -22,6 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
   const loadUser = useCallback(async () => {
     try {
@@ -36,14 +37,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch {
         }
         setUser(null);
-        router.replace("/login");
+        const isPublic =
+          pathname?.startsWith("/login") ||
+          pathname?.startsWith("/register") ||
+          pathname?.startsWith("/verify-email");
+        if (!isPublic) {
+          router.replace("/login");
+        }
       }
     } catch {
       setUser(null);
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [router, pathname]);
 
   useEffect(() => {
     loadUser();
