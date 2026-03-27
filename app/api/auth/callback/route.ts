@@ -8,6 +8,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const email = searchParams.get("email");
   const name = searchParams.get("name") || "";
+  const mode = searchParams.get("mode") || "login"; // "login" o "register"
 
   if (!email) {
     return NextResponse.redirect(new URL("/login?status=error", req.url));
@@ -17,16 +18,22 @@ export async function GET(req: NextRequest) {
   const usersCollection = db.collection<UserDocument>(COLLECTIONS.USERS);
 
   // 1. ¿Ya existe el usuario en tu MongoDB?
-  let user = await usersCollection.findOne({ email });
+  const user = await usersCollection.findOne({ email });
 
+  // CASO A: El usuario NO existe
   if (!user) {
-    // 2. Si NO existe -> REGISTRO NUEVO
+    // Si intentaba hacer LOGIN pero no existe -> Error: "No tienes cuenta"
+    if (mode === "login") {
+      return NextResponse.redirect(new URL("/login?status=notfound", req.url));
+    }
+
+    // Si intentaba hacer REGISTER -> Lo creamos
     const verificationToken = generateVerificationToken();
     const newUser: Omit<UserDocument, "_id"> = {
       email,
-      password: "", // Sin password por ser de Google
+      password: "", // Sin password por ser OAuth
       name,
-      emailVerified: false, // BLOQUEADO hasta que confirme
+      emailVerified: false, 
       verificationToken,
       verificationTokenExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000),
       createdAt: new Date(),
@@ -34,23 +41,30 @@ export async function GET(req: NextRequest) {
     };
 
     await usersCollection.insertOne(newUser as UserDocument);
-    
-    // USAMOS TU RESEND (Lo que ya tienes funcionando perfecto)
     await sendVerificationEmail(email, name, verificationToken);
 
-    // Redirigimos a una página que muestre el mensaje de "Cuenta creada"
-    // Pasamos el email para que se vea en la pantalla
     return NextResponse.redirect(
       new URL(`/login?status=verify-email&email=${encodeURIComponent(email)}`, req.url)
     );
   }
 
-  // 3. Si existe pero NO está verificado -> BLOQUEADO
-  if (!user.emailVerified) {
-    return NextResponse.redirect(new URL("/login?status=pending-verification", req.url));
+  // CASO B: El usuario SÍ existe
+  if (mode === "register") {
+    return NextResponse.redirect(new URL("/login?status=already-exists", req.url));
   }
 
-  // 4. Si está verificado -> LOGIN EXITOSO (Le damos su token)
+  // Si intentaba hacer LOGIN
+  if (!user.emailVerified) {
+    // Si es OAuth y el usuario existe pero no está verificado, lo verificamos automáticamente
+    // ya que el proveedor (Google/MS) ya verificó el email.
+    await usersCollection.updateOne(
+      { _id: user._id },
+      { $set: { emailVerified: true, updatedAt: new Date() } }
+    );
+    user.emailVerified = true;
+  }
+
+  // LOGIN EXITOSO
   const token = signToken({
     userId: user._id.toString(),
     email: user.email,

@@ -13,7 +13,7 @@ let clientPromise: Promise<MongoClient>;
 if (process.env.NODE_ENV === "development") {
   // En desarrollo, usar una variable global para preservar el cliente
   // a través de hot-reloads de Next.js
-  let globalWithMongo = global as typeof globalThis & {
+  const globalWithMongo = global as typeof globalThis & {
     _mongoClientPromise?: Promise<MongoClient>;
   };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Lock, Mail, Chrome, CheckCircle2 } from "lucide-react";
+import { Lock, Mail, CheckCircle2 } from "lucide-react";
 import { Suspense } from "react";
+import { OAuthButtons } from "@/components/auth/oauth-buttons";
 
 function LoginContent() {
   const router = useRouter();
@@ -18,30 +19,29 @@ function LoginContent() {
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [verifyEmail, setVerifyEmail] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  useEffect(() => {
-    const status = searchParams.get("status");
-    const email = searchParams.get("email");
+  const status = searchParams.get("status");
+  const statusEmail = searchParams.get("email");
 
-    if (status === "verify-email" && email) {
-      setVerifyEmail(email);
-    } else if (status === "pending-verification") {
-      setError("Por favor verifica tu correo antes de iniciar sesión.");
-    } else if (status === "error") {
-      setError("Hubo un error con el inicio de sesión de Google.");
-    }
-  }, [searchParams]);
+  const verifyEmail =
+    status === "verify-email" && statusEmail ? statusEmail : null;
 
-  const handleGoogleLogin = () => {
-    // Redirigir al endpoint de login del backend
-    window.location.href = "http://localhost:8000/auth/login/google";
-  };
+  const statusError =
+    status === "pending-verification"
+      ? "Por favor verifica tu correo antes de iniciar sesión."
+      : status === "notfound"
+        ? "No existe una cuenta con este correo. Por favor, regístrate primero."
+        : status === "already-exists"
+          ? "Ya existe una cuenta con este correo. Por favor, inicia sesión."
+          : status === "error"
+            ? "Hubo un error con el inicio de sesión."
+            : null;
+
+  const displayError = error || statusError;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
@@ -60,18 +60,13 @@ function LoginContent() {
       const result = await login(formData);
 
       if (result.success) {
-        // Login exitoso - esperar un momento para que la cookie se establezca
-        // antes de navegar, esto evita race conditions con el middleware
         await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Usar window.location.href para forzar una navegación completa del servidor
-        // Esto asegura que el middleware se ejecute con la cookie ya establecida
         window.location.href = "/";
       } else {
-        setError(result.message);
+        setError(result.message || "Credenciales inválidas.");
         setIsLoading(false);
       }
-    } catch (err) {
+    } catch {
       setError("Error al iniciar sesión. Por favor intenta nuevamente.");
       setIsLoading(false);
     }
@@ -92,13 +87,14 @@ function LoginContent() {
             </h1>
             <p className="text-sm text-muted">
               Te hemos enviado un correo de verificación a <br />
-              <strong className="text-foreground">{verifyEmail}</strong>. Por favor revisa tu bandeja de entrada y haz clic en el enlace para activar tu cuenta.
+              <strong className="text-foreground">{verifyEmail}</strong>. Por
+              favor revisa tu bandeja de entrada y haz clic en el enlace para
+              activar tu cuenta.
             </p>
           </div>
-          <Button 
-            className="w-full" 
+          <Button
+            className="w-full"
             onClick={() => {
-              setVerifyEmail(null);
               router.push("/login");
             }}
           >
@@ -124,15 +120,22 @@ function LoginContent() {
           </div>
 
           {/* Error Alert */}
-          {error && (
+          {displayError && (
             <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>
+                {displayError}{" "}
+                {/* Mostrar enlace a registro si no está registrado */}
+                {status === "notfound" && (
+                  <Link href="/register" className="underline font-medium">
+                    Crear cuenta
+                  </Link>
+                )}
+              </AlertDescription>
             </Alert>
           )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email">Correo electrónico</Label>
               <div className="relative">
@@ -152,7 +155,6 @@ function LoginContent() {
               </div>
             </div>
 
-            {/* Contraseña */}
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>
               <div className="relative">
@@ -172,7 +174,6 @@ function LoginContent() {
               </div>
             </div>
 
-            {/* Submit Button */}
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
             </Button>
@@ -188,29 +189,15 @@ function LoginContent() {
             </div>
           </div>
 
-          {/* Google Login Button */}
-          <Button
-            variant="outline"
-            type="button"
-            className="w-full flex items-center justify-center gap-2"
-            onClick={handleGoogleLogin}
-            disabled={isLoading}
-          >
-            <Chrome className="h-4 w-4 text-red-500" />
-             Iniciar sesión con Google
-          </Button>
+          {/* OAuth Buttons */}
+          <OAuthButtons mode="login" isLoading={isLoading} />
 
           {/* Footer */}
-          <div className="space-y-4">
-            <div className="text-center text-sm">
-              <span className="text-muted">¿No tienes una cuenta? </span>
-              <Link
-                href="/register"
-                className="text-primary hover:underline font-medium"
-              >
-                Regístrate
-              </Link>
-            </div>
+          <div className="text-center text-sm">
+            <span className="text-muted">¿No tienes una cuenta? </span>
+            <Link href="/register" className="text-primary hover:underline font-medium">
+              Regístrate
+            </Link>
           </div>
         </div>
       </Card>

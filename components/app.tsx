@@ -10,12 +10,14 @@ import {
   RefreshCw,
   BookMarked,
   Plus,
+  Info,
 } from "lucide-react";
 
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import { UploadZone } from "@/components/upload/upload-zone";
 import { SerperConfig } from "@/components/upload/serper-config";
@@ -74,20 +76,20 @@ export function App() {
   const handleUpdateRef = useCallback((index: number, updated: ReferenciaCruda) => {
     setExtraerData(prev => {
       if (!prev) return prev;
-      const nuevasRefs = [...prev.referencias];
-      nuevasRefs[index] = updated;
-      return { ...prev, referencias: nuevasRefs };
+      const referencias = [...prev.referencias];
+      referencias[index] = updated;
+      return { ...prev, referencias };
     });
   }, []);
 
   const handleDeleteRef = useCallback((index: number) => {
     setExtraerData(prev => {
       if (!prev) return prev;
-      const nuevasRefs = prev.referencias.filter((_, i) => i !== index);
+      const referencias = prev.referencias.filter((_, i) => i !== index);
       return { 
         ...prev, 
-        referencias: nuevasRefs,
-        total_referencias: nuevasRefs.length 
+        referencias,
+        total_referencias: referencias.length 
       };
     });
   }, []);
@@ -95,10 +97,11 @@ export function App() {
   const handleAddRef = useCallback(() => {
     setExtraerData(prev => {
       if (!prev) return prev;
+      const referencias = [EMPTY_REFERENCE, ...prev.referencias];
       return { 
         ...prev, 
-        referencias: [EMPTY_REFERENCE, ...prev.referencias],
-        total_referencias: prev.total_referencias + 1
+        referencias,
+        total_referencias: referencias.length
       };
     });
     setTabActiva("extraidas");
@@ -282,6 +285,14 @@ export function App() {
                   </Button>
                 </div>
 
+                <Alert className="bg-primary/5 border-primary/20 py-3">
+                  <Info className="h-4 w-4 text-primary" />
+                  <AlertDescription className="text-xs text-muted-foreground leading-relaxed">
+                    Verifica que las referencias hayan sido extraídas correctamente. 
+                    Si detectas algún error o texto irrelevante, puedes <span className="font-semibold text-foreground">editarlas</span> o <span className="font-semibold text-foreground">eliminarlas</span> antes de iniciar la validación académica.
+                  </AlertDescription>
+                </Alert>
+
                 {/* Botón validar (si aún no se validó) */}
                 {!validarData && (
                   <div className="rounded-lg border border-border bg-surface px-5 py-4 space-y-3">
@@ -347,7 +358,7 @@ export function App() {
                   <StatsBar data={validarData} />
                   <div className="space-y-2">
                     {validarData.referencias.map((ref) => (
-                      <RefValidadaCard key={ref.indice} ref={ref} />
+                      <RefValidadaCard key={ref.indice} referencia={ref} />
                     ))}
                   </div>
                 </div>

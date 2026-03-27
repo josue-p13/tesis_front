@@ -3,6 +3,7 @@
 import { Key, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 interface SerperConfigProps {
   usarSerper: boolean;
@@ -90,9 +91,4 @@ export function SerperConfig({
       </div>
     </div>
   );
-}
-
-// Helper para clases condicionales
-function cn(...classes: any[]) {
-  return classes.filter(Boolean).join(" ");
 }

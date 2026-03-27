@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Lock, Mail, User, CheckCircle2, Chrome } from "lucide-react";
+import { Lock, Mail, User, CheckCircle2 } from "lucide-react";
+import { OAuthButtons } from "@/components/auth/oauth-buttons";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -24,16 +25,8 @@ export default function RegisterPage() {
     confirmPassword: "",
   });
 
-  const handleGoogleLogin = () => {
-    // Redirigir al backend para OAuth
-    window.location.href = "http://localhost:8000/auth/login/google";
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     setError(null);
   };
 
@@ -41,7 +34,6 @@ export default function RegisterPage() {
     e.preventDefault();
     setError(null);
 
-    // Validar que las contraseñas coincidan
     if (formData.password !== formData.confirmPassword) {
       setError("Las contraseñas no coinciden");
       return;
@@ -61,7 +53,7 @@ export default function RegisterPage() {
       } else {
         setError(result.message);
       }
-    } catch (err) {
+    } catch {
       setError("Error al crear la cuenta. Por favor intenta nuevamente.");
     } finally {
       setIsLoading(false);
@@ -85,10 +77,7 @@ export default function RegisterPage() {
               Por favor revisa tu bandeja de entrada y haz clic en el enlace
               para activar tu cuenta.
             </p>
-            <Button
-              onClick={() => router.push("/login")}
-              className="w-full mt-4"
-            >
+            <Button onClick={() => router.push("/login")} className="w-full mt-4">
               Ir a iniciar sesión
             </Button>
           </div>
@@ -215,25 +204,13 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* Google Register Button */}
-          <Button
-            variant="outline"
-            type="button"
-            className="w-full flex items-center justify-center gap-2"
-            onClick={handleGoogleLogin}
-            disabled={isLoading}
-          >
-            <Chrome className="h-4 w-4 text-red-500" />
-             Registrarse con Google
-          </Button>
+          {/* OAuth Buttons */}
+          <OAuthButtons mode="register" isLoading={isLoading} />
 
           {/* Footer */}
           <div className="text-center text-sm">
             <span className="text-muted">¿Ya tienes una cuenta? </span>
-            <Link
-              href="/login"
-              className="text-primary hover:underline font-medium"
-            >
+            <Link href="/login" className="text-primary hover:underline font-medium">
               Inicia sesión
             </Link>
           </div>

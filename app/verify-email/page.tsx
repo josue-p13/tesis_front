@@ -19,12 +19,7 @@ function VerifyEmailContent() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    if (!token) {
-      setStatus("error");
-      setMessage("Token de verificación no encontrado");
-      return;
-    }
-
+    if (!token) return;
     const verify = async () => {
       try {
         const result = await verifyEmail(token);
@@ -41,7 +36,7 @@ function VerifyEmailContent() {
           setStatus("error");
           setMessage(result.message);
         }
-      } catch (err) {
+      } catch {
         setStatus("error");
         setMessage("Error al verificar el correo electrónico");
       }
@@ -49,6 +44,42 @@ function VerifyEmailContent() {
 
     verify();
   }, [token, router]);
+
+  if (!token) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md p-8">
+          <div className="flex flex-col items-center text-center space-y-4">
+            <div className="h-16 w-16 rounded-full bg-danger/20 flex items-center justify-center">
+              <XCircle className="h-8 w-8 text-danger" />
+            </div>
+            <h1 className="text-2xl font-semibold text-foreground">
+              Error de verificación
+            </h1>
+            <Alert variant="destructive" className="text-left">
+              <AlertDescription>Token de verificación no encontrado</AlertDescription>
+            </Alert>
+            <div className="flex flex-col gap-2 w-full">
+              <Button
+                onClick={() => router.push("/register")}
+                variant="outline"
+                className="w-full"
+              >
+                Volver a registrarse
+              </Button>
+              <Button
+                onClick={() => router.push("/login")}
+                variant="ghost"
+                className="w-full"
+              >
+                Ir a iniciar sesión
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">

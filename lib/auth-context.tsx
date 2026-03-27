@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { User, RegisterData, LoginData } from "@/types/user";
 import * as authService from "@/services/auth.service";
@@ -23,11 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    loadUser();
-  }, []);
-
-  async function loadUser() {
+  const loadUser = useCallback(async () => {
     try {
       setLoading(true);
       const response = await authService.getCurrentUser();
@@ -37,19 +33,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         try {
           await authService.logout();
-        } catch (e) {
-          console.error("Error calling logout:", e);
+        } catch {
         }
         setUser(null);
         router.replace("/login");
       }
-    } catch (err) {
-      console.error("Error loading user:", err);
+    } catch {
       setUser(null);
     } finally {
       setLoading(false);
     }
-  }
+  }, [router]);
+
+  useEffect(() => {
+    loadUser();
+  }, [loadUser]);
 
   async function login(data: LoginData) {
     try {
@@ -63,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setError(response.message);
         return { success: false, message: response.message };
       }
-    } catch (err) {
+    } catch {
       const message = "Error al iniciar sesión";
       setError(message);
       return { success: false, message };
@@ -81,7 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setError(response.message);
         return { success: false, message: response.message };
       }
-    } catch (err) {
+    } catch {
       const message = "Error al registrar usuario";
       setError(message);
       return { success: false, message };
@@ -93,8 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await authService.logout();
       setUser(null);
       router.push("/login");
-    } catch (err) {
-      console.error("Error logging out:", err);
+    } catch {
     }
   }
 
