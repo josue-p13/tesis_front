@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { JWTPayload } from "@/types/user";
-import { SignJWT, jwtVerify } from "jose";
+import { jwtVerify } from "jose";
 
 const JWT_SECRET = process.env.JWT_SECRET || "";
 
@@ -27,21 +27,6 @@ export function verifyToken(token: string): JWTPayload | null {
   }
 }
 
-// Crear un JWT token (Edge Runtime - para middleware)
-export async function signTokenEdge(payload: JWTPayload): Promise<string> {
-  if (!JWT_SECRET) {
-    throw new Error('Invalid/Missing environment variable: "JWT_SECRET"');
-  }
-  
-  const secret = new TextEncoder().encode(JWT_SECRET);
-  const token = await new SignJWT({ ...payload })
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("7d")
-    .sign(secret);
-    
-  return token;
-}
-
 // Verificar y decodificar un JWT token (Edge Runtime - para middleware)
 export async function verifyTokenEdge(token: string): Promise<JWTPayload | null> {
   if (!JWT_SECRET) {
@@ -61,8 +46,7 @@ export async function verifyTokenEdge(token: string): Promise<JWTPayload | null>
     }
     
     return null;
-  } catch (error) {
-    console.error("[JWT] Error verifying token:", error);
+  } catch {
     return null;
   }
 }

@@ -44,5 +44,3 @@ export async function getDatabase(): Promise<Db> {
 export const COLLECTIONS = {
   USERS: "users",
 } as const;
-
-export default clientPromise;

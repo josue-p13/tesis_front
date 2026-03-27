@@ -13,6 +13,26 @@ import { Lock, Mail, CheckCircle2 } from "lucide-react";
 import { Suspense } from "react";
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
 
+function Skeleton() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md p-8">
+        <div className="space-y-6">
+          <div className="space-y-2 text-center">
+            <div className="h-6 w-2/3 bg-surface-2 rounded mx-auto" />
+            <div className="h-4 w-4/5 bg-surface-2 rounded mx-auto" />
+          </div>
+          <div className="space-y-4">
+            <div className="h-10 w-full bg-surface-2 rounded" />
+            <div className="h-10 w-full bg-surface-2 rounded" />
+            <div className="h-10 w-full bg-surface-2 rounded" />
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -207,7 +227,7 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Cargando...</div>}>
+    <Suspense fallback={<Skeleton />}>
       <LoginContent />
     </Suspense>
   );

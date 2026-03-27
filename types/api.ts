@@ -77,16 +77,3 @@ export interface ValidarResponse {
   referencias: ReferenciaValidada[];
   serper_error?: SerperError;
 }
-
-export type EstadoReferencia =
-  | "VERIFICADA"
-  | "VERIFICADA (BD)"
-  | "VERIFICADA (BD por score)"
-  | "ENCONTRADA_POR_TITULO"
-  | "ENCONTRADA_POR_TITULO (DOI fallido)"
-  | "ENCONTRADA_GOOGLE_SCHOLAR"
-  | "DOI_NO_ENCONTRADO"
-  | "REFERENCIA_WEB"
-  | "URL_NO_ACCESIBLE"
-  | "NO_ENCONTRADA"
-  | "SIN_DATOS_PARA_BUSCAR";

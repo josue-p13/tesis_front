@@ -35,14 +35,21 @@ export function RefExtraidaCard({ referencia, index, onUpdate, onDelete }: RefEx
 
   if (isEditing) {
     const draft = editedRef || referencia;
+    const baseId = `ref-extraida-${index}`;
     return (
       <BaseRefCard
         index={index}
         isEditing
         title={
           <div className="space-y-1">
-            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ml-1">Título del Artículo</label>
+            <label
+              htmlFor={`${baseId}-titulo`}
+              className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ml-1"
+            >
+              Título del Artículo
+            </label>
             <Input
+              id={`${baseId}-titulo`}
               value={draft.titulo || ""}
               onChange={(e) => setEditedRef({ ...(editedRef || { ...referencia }), titulo: e.target.value })}
               placeholder="Título de la referencia..."
@@ -54,8 +61,14 @@ export function RefExtraidaCard({ referencia, index, onUpdate, onDelete }: RefEx
           <div className="space-y-3 pt-1">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ml-1">Autores</label>
+                <label
+                  htmlFor={`${baseId}-autores`}
+                  className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ml-1"
+                >
+                  Autores
+                </label>
                 <Input
+                  id={`${baseId}-autores`}
                   value={draft.autores || ""}
                   onChange={(e) => setEditedRef({ ...(editedRef || { ...referencia }), autores: e.target.value })}
                   placeholder="Ej: Doe J, Smith A"
@@ -63,8 +76,14 @@ export function RefExtraidaCard({ referencia, index, onUpdate, onDelete }: RefEx
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ml-1">Año</label>
+                <label
+                  htmlFor={`${baseId}-anio`}
+                  className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ml-1"
+                >
+                  Año
+                </label>
                 <Input
+                  id={`${baseId}-anio`}
                   value={draft.año || ""}
                   onChange={(e) => setEditedRef({ ...(editedRef || { ...referencia }), año: e.target.value })}
                   placeholder="Ej: 2024"
@@ -72,8 +91,14 @@ export function RefExtraidaCard({ referencia, index, onUpdate, onDelete }: RefEx
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ml-1">Revista / Libro</label>
+                <label
+                  htmlFor={`${baseId}-publicacion`}
+                  className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ml-1"
+                >
+                  Revista / Libro
+                </label>
                 <Input
+                  id={`${baseId}-publicacion`}
                   value={draft.publicacion || ""}
                   onChange={(e) => setEditedRef({ ...(editedRef || { ...referencia }), publicacion: e.target.value })}
                   placeholder="Nombre de la fuente..."
@@ -83,8 +108,14 @@ export function RefExtraidaCard({ referencia, index, onUpdate, onDelete }: RefEx
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ml-1">DOI</label>
+                <label
+                  htmlFor={`${baseId}-doi`}
+                  className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ml-1"
+                >
+                  DOI
+                </label>
                 <Input
+                  id={`${baseId}-doi`}
                   value={draft.doi || ""}
                   onChange={(e) => setEditedRef({ ...(editedRef || { ...referencia }), doi: e.target.value })}
                   placeholder="10.xxxx/yyyy"
@@ -92,8 +123,14 @@ export function RefExtraidaCard({ referencia, index, onUpdate, onDelete }: RefEx
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ml-1">URL</label>
+                <label
+                  htmlFor={`${baseId}-url`}
+                  className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ml-1"
+                >
+                  URL
+                </label>
                 <Input
+                  id={`${baseId}-url`}
                   value={draft.url || ""}
                   onChange={(e) => setEditedRef({ ...(editedRef || { ...referencia }), url: e.target.value })}
                   placeholder="https://..."

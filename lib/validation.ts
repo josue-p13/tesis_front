@@ -37,8 +37,3 @@ export const loginSchema = z.object({
 export const verifyEmailSchema = z.object({
   token: z.string().min(1, "Token de verificación requerido"),
 });
-
-// Tipos inferidos de los schemas
-export type RegisterInput = z.infer<typeof registerSchema>;
-export type LoginInput = z.infer<typeof loginSchema>;
-export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
