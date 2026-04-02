@@ -37,3 +37,30 @@ export const loginSchema = z.object({
 export const verifyEmailSchema = z.object({
   token: z.string().min(1, "Token de verificación requerido"),
 });
+
+export const forgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .email("Email inválido")
+    .toLowerCase()
+    .trim(),
+});
+
+export const resetPasswordWithCodeSchema = z.object({
+  email: z
+    .string()
+    .email("Email inválido")
+    .toLowerCase()
+    .trim(),
+  code: z
+    .string()
+    .regex(/^\d{6}$/, "El código debe tener 6 dígitos"),
+  password: z
+    .string()
+    .min(8, "La contraseña debe tener al menos 8 caracteres")
+    .max(100, "La contraseña no puede exceder 100 caracteres")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/,
+      "La contraseña debe contener al menos una mayúscula, una minúscula, un número y un símbolo"
+    ),
+});

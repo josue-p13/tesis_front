@@ -59,3 +59,27 @@ export async function verifyEmail(
   const response = await fetch(`${API_BASE}/verify-email?token=${token}`);
   return response.json();
 }
+
+export async function requestPasswordResetCode(
+  email: string
+): Promise<{ success: boolean; message: string }> {
+  const response = await fetch(`${API_BASE}/forgot-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  return response.json();
+}
+
+export async function resetPasswordWithCode(
+  email: string,
+  code: string,
+  password: string
+): Promise<{ success: boolean; message: string }> {
+  const response = await fetch(`${API_BASE}/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, code, password }),
+  });
+  return response.json();
+}

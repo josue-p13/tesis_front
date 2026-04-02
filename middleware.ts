@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { verifyTokenEdge } from "@/lib/jwt";
 
 // Rutas públicas que no requieren autenticación
-const publicRoutes = ["/login", "/register", "/verify-email"];
+const publicRoutes = ["/login", "/register", "/verify-email", "/forgot-password"];
 
 // Rutas de autenticación (si estás logueado, redirigir a home)
 const authRoutes = ["/login", "/register"];

@@ -40,7 +40,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const isPublic =
           pathname?.startsWith("/login") ||
           pathname?.startsWith("/register") ||
-          pathname?.startsWith("/verify-email");
+          pathname?.startsWith("/verify-email") ||
+          pathname?.startsWith("/forgot-password");
         if (!isPublic) {
           router.replace("/login");
         }

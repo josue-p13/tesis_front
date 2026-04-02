@@ -25,6 +25,25 @@ export async function sendVerificationEmail(
   }
 }
 
+export async function sendPasswordResetCodeEmail(
+  email: string,
+  name: string,
+  code: string
+) {
+  try {
+    await resend.emails.send({
+      from: fromEmail,
+      to: email,
+      subject: "Código para restablecer tu contraseña",
+      html: getPasswordResetCodeEmailTemplate(name, code),
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Error sending password reset code email:", error);
+    return { success: false, error };
+  }
+}
+
 // Template de email con el estilo de tu app
 function getVerificationEmailTemplate(name: string, verificationUrl: string) {
   return `
@@ -93,6 +112,61 @@ function getVerificationEmailTemplate(name: string, verificationUrl: string) {
         <table role="presentation" style="max-width: 600px; margin: 24px auto 0;" cellspacing="0" cellpadding="0" border="0">
           <tr>
             <td style="text-align: center;">
+              <p style="margin: 0; font-size: 12px; color: #8b949e;">
+                Este correo fue enviado automáticamente, por favor no respondas.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+}
+
+function getPasswordResetCodeEmailTemplate(name: string, code: string) {
+  return `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restablece tu contraseña</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #0d1117; color: #e6edf3;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+    <tr>
+      <td style="padding: 40px 20px;">
+        <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #161b22; border: 1px solid #30363d; border-radius: 8px;" cellspacing="0" cellpadding="0" border="0">
+          <tr>
+            <td style="padding: 40px 40px 32px; text-align: center; border-bottom: 1px solid #30363d;">
+              <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #e6edf3;">
+                Restablece tu contraseña
+              </h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 32px 40px;">
+              <p style="margin: 0 0 16px; font-size: 16px; line-height: 1.5; color: #e6edf3;">
+                Hola <strong>${name}</strong>,
+              </p>
+              <p style="margin: 0 0 24px; font-size: 16px; line-height: 1.5; color: #8b949e;">
+                Usa el siguiente código para restablecer tu contraseña. Este código expira en <strong>5 minutos</strong>.
+              </p>
+              <div style="padding: 16px; border: 1px dashed #30363d; border-radius: 8px; text-align: center; background-color: #0b1220;">
+                <span style="font-size: 28px; letter-spacing: 8px; font-weight: 700; color: #29c5e8;">
+                  ${code}
+                </span>
+              </div>
+              <p style="margin: 24px 0 0; font-size: 13px; line-height: 1.5; color: #8b949e;">
+                Si no solicitaste este código, puedes ignorar este correo.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 24px 40px; border-top: 1px solid #30363d;">
               <p style="margin: 0; font-size: 12px; color: #8b949e;">
                 Este correo fue enviado automáticamente, por favor no respondas.
               </p>

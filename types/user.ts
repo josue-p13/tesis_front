@@ -9,6 +9,10 @@ export interface UserDocument {
   emailVerified: boolean;
   verificationToken?: string | null;
   verificationTokenExpiry?: Date | null;
+  passwordResetCodeHash?: string | null;
+  passwordResetCodeExpiry?: Date | null;
+  passwordResetCodeAttempts?: number | null;
+  passwordResetCodeLastSentAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

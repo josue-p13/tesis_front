@@ -192,6 +192,14 @@ function LoginContent() {
                   autoComplete="current-password"
                 />
               </div>
+              <div className="flex justify-end">
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-primary hover:underline font-medium"
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
             </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>
