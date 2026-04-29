@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -12,6 +12,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Lock, Mail, CheckCircle2 } from "lucide-react";
 import { Suspense } from "react";
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
+import * as THREE from "three";
+import FOG from "vanta/dist/vanta.fog.min";
 
 function Skeleton() {
   return (
@@ -43,6 +45,34 @@ function LoginContent() {
     email: "",
     password: "",
   });
+
+  const vantaRef = useRef<HTMLDivElement>(null);
+  const [vantaEffect, setVantaEffect] = useState<{ destroy: () => void } | null>(null);
+
+  useEffect(() => {
+    if (!vantaEffect && vantaRef.current) {
+      const effect = FOG({
+        el: vantaRef.current,
+        THREE: THREE,
+        mouseControls: true,
+        touchControls: true,
+        gyroControls: false,
+        minHeight: 200.0,
+        minWidth: 200.0,
+        highlightColor: 0x29c5e8,
+        midtoneColor: 0x161b22,
+        lowlightColor: 0x0d1117,
+        baseColor: 0x0d1117,
+        blurFactor: 0.6,
+        speed: 1.5,
+        zoom: 1.0,
+      });
+      setVantaEffect(effect);
+    }
+    return () => {
+      if (vantaEffect) vantaEffect.destroy();
+    };
+  }, [vantaEffect]);
 
   const status = searchParams.get("status");
   const statusEmail = searchParams.get("email");
@@ -126,8 +156,11 @@ function LoginContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md p-8">
+    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">
+      {/* Vanta Background */}
+      <div ref={vantaRef} className="absolute inset-0 -z-10" />
+
+      <Card className="w-full max-w-md p-8 bg-surface/80 backdrop-blur-md border-border/50 shadow-2xl">
         <div className="space-y-6">
           {/* Header */}
           <div className="space-y-2 text-center">
@@ -213,7 +246,7 @@ function LoginContent() {
               <span className="w-full border-t border-muted" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted">O continuar con</span>
+              <span className="bg-background/0 px-2 text-muted backdrop-blur-none">O continuar con</span>
             </div>
           </div>
 
