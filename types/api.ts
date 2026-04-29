@@ -22,6 +22,7 @@ export interface ExtraerResponse {
   referencias: ReferenciaCruda[];
   serper_api_key: string;
   usar_serper: boolean;
+  permitir_traduccion: boolean;
 }
 
 // Tipos para /documents/validar

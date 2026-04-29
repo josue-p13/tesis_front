@@ -5,12 +5,14 @@ const BASE_URL = "http://localhost:8000";
 export async function extraerReferencias(
   pdf: File,
   serperApiKey: string,
-  usarSerper: boolean
+  usarSerper: boolean,
+  permitirTraduccion: boolean
 ): Promise<ExtraerResponse> {
   const formData = new FormData();
   formData.append("pdf", pdf);
   formData.append("serper_api_key", serperApiKey);
   formData.append("usar_serper", String(usarSerper));
+  formData.append("permitir_traduccion", String(permitirTraduccion));
 
   const res = await fetch(`${BASE_URL}/documents/extraer`, {
     method: "POST",
@@ -38,12 +40,18 @@ export async function extraerReferencias(
 export async function validarReferencias(
   referencias: ReferenciaCruda[],
   serperApiKey: string,
-  usarSerper: boolean
+  usarSerper: boolean,
+  permitirTraduccion: boolean
 ): Promise<ValidarResponse> {
   const res = await fetch(`${BASE_URL}/documents/validar`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ referencias, serper_api_key: serperApiKey, usar_serper: usarSerper }),
+    body: JSON.stringify({
+      referencias,
+      serper_api_key: serperApiKey,
+      usar_serper: usarSerper,
+      permitir_traduccion: permitirTraduccion,
+    }),
   });
 
   if (!res.ok) {

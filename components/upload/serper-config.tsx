@@ -1,6 +1,6 @@
 "use client";
 
-import { Key, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Key, AlertCircle, CheckCircle2, Languages } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -8,15 +8,19 @@ import { cn } from "@/lib/utils";
 interface SerperConfigProps {
   usarSerper: boolean;
   apiKey: string;
+  permitirTraduccion: boolean;
   onToggle: (val: boolean) => void;
   onKeyChange: (val: string) => void;
+  onTraduccionToggle: (val: boolean) => void;
 }
 
 export function SerperConfig({
   usarSerper,
   apiKey,
+  permitirTraduccion,
   onToggle,
   onKeyChange,
+  onTraduccionToggle,
 }: SerperConfigProps) {
   const isKeyValid = apiKey.length >= 32; // Serper keys suelen tener ~40 caracteres
 
@@ -50,7 +54,7 @@ export function SerperConfig({
       {/* API Key input (animated) */}
       <div
         className={`overflow-hidden transition-all duration-200 ${
-          usarSerper ? "max-h-28 opacity-100 mt-2" : "max-h-0 opacity-0"
+          usarSerper ? "max-h-[250px] opacity-100 mt-2" : "max-h-0 opacity-0"
         }`}
       >
         <div className="relative">
@@ -88,6 +92,32 @@ export function SerperConfig({
             La llave parece demasiado corta o inválida
           </p>
         )}
+
+        {/* Translation Toggle */}
+        <div className="mt-4 pt-3 border-t border-border/50">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-surface-2 border border-border">
+                <Languages className="h-3.5 w-3.5 text-muted" />
+              </div>
+              <div>
+                <p className="text-sm font-medium leading-none">Búsqueda Profunda (Traducción)</p>
+                <p className="text-[10px] text-muted mt-1">
+                  Reintenta citas no encontradas traduciéndolas al inglés.
+                </p>
+              </div>
+            </div>
+            <Switch checked={permitirTraduccion} onCheckedChange={onTraduccionToggle} />
+          </div>
+          {permitirTraduccion && (
+            <div className="mt-2.5 flex items-start gap-2 rounded-md bg-amber-500/5 border border-amber-500/20 p-2 text-[10px] text-amber-700 dark:text-amber-400">
+              <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
+              <p>
+                <b>Aviso:</b> Usar traducción al inglés puede consumir más búsquedas en la API de Serper (hasta un x2 en cada cita que no se encuentre).
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

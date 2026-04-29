@@ -55,6 +55,7 @@ type AppState = {
   dragging: boolean;
   usarSerper: boolean;
   serperKey: string;
+  permitirTraduccion: boolean;
   loadingExtraer: boolean;
   loadingValidar: boolean;
   errorExtraer: string | null;
@@ -70,6 +71,7 @@ type AppAction =
   | { type: "setDragging"; dragging: boolean }
   | { type: "setUsarSerper"; usarSerper: boolean }
   | { type: "setSerperKey"; serperKey: string }
+  | { type: "setPermitirTraduccion"; permitirTraduccion: boolean }
   | { type: "reset" }
   | { type: "extraerStart" }
   | { type: "extraerSuccess"; data: ExtraidasState }
@@ -94,6 +96,7 @@ const initialState: AppState = {
   dragging: false,
   usarSerper: false,
   serperKey: "",
+  permitirTraduccion: false,
   loadingExtraer: false,
   loadingValidar: false,
   errorExtraer: null,
@@ -116,6 +119,8 @@ function reducer(state: AppState, action: AppAction): AppState {
       return { ...state, usarSerper: action.usarSerper };
     case "setSerperKey":
       return { ...state, serperKey: action.serperKey };
+    case "setPermitirTraduccion":
+      return { ...state, permitirTraduccion: action.permitirTraduccion };
     case "reset":
       return { ...initialState };
     case "extraerStart":
@@ -177,6 +182,7 @@ function UploadSection(props: {
   dragging: boolean;
   usarSerper: boolean;
   serperKey: string;
+  permitirTraduccion: boolean;
   errorExtraer: string | null;
   loadingExtraer: boolean;
   onFile: (file: File) => void;
@@ -185,6 +191,7 @@ function UploadSection(props: {
   onDragLeave: () => void;
   onToggleSerper: (val: boolean) => void;
   onChangeSerperKey: (val: string) => void;
+  onToggleTraduccion: (val: boolean) => void;
   onExtraer: () => void;
 }) {
   return (
@@ -208,8 +215,10 @@ function UploadSection(props: {
       <SerperConfig
         usarSerper={props.usarSerper}
         apiKey={props.serperKey}
+        permitirTraduccion={props.permitirTraduccion}
         onToggle={props.onToggleSerper}
         onKeyChange={props.onChangeSerperKey}
+        onTraduccionToggle={props.onToggleTraduccion}
       />
 
       {props.errorExtraer && (
@@ -264,6 +273,7 @@ function DocumentHeader(props: {
 function ExtractedTab(props: {
   referencias: RefItem[];
   usarSerper: boolean;
+  permitirTraduccion: boolean;
   errorValidar: string | null;
   loadingValidar: boolean;
   validarData: ValidarResponse | null;
@@ -311,6 +321,11 @@ function ExtractedTab(props: {
               <p className="text-xs text-muted">
                 OpenAlex · CrossRef · Semantic Scholar · PubMed · CORE · Google Books
                 {props.usarSerper && " · Google Scholar"}
+                {props.usarSerper && props.permitirTraduccion && (
+                  <span className="text-amber-600 dark:text-amber-400 font-medium">
+                    {" "}· Búsqueda Profunda
+                  </span>
+                )}
               </p>
             </div>
             <Button onClick={props.onValidar} disabled={props.loadingValidar} className="shrink-0">
@@ -395,6 +410,7 @@ function ResultsSection(props: {
   totalValidadas: number | null;
   referencias: RefItem[];
   usarSerper: boolean;
+  permitirTraduccion: boolean;
   validarData: ValidarResponse | null;
   loadingValidar: boolean;
   errorValidar: string | null;
@@ -433,6 +449,7 @@ function ResultsSection(props: {
           <ExtractedTab
             referencias={props.referencias}
             usarSerper={props.usarSerper}
+            permitirTraduccion={props.permitirTraduccion}
             errorValidar={props.errorValidar}
             loadingValidar={props.loadingValidar}
             validarData={props.validarData}
@@ -470,6 +487,7 @@ export function App() {
       referencias: state.extraerData.referencias.map((item) => item.referencia),
       serper_api_key: state.extraerData.serper_api_key,
       usar_serper: state.extraerData.usar_serper,
+      permitir_traduccion: state.extraerData.permitir_traduccion,
     };
   }, [state.extraerData]);
 
@@ -477,7 +495,7 @@ export function App() {
     if (!state.pdf) return;
     dispatch({ type: "extraerStart" });
     try {
-      const data = await extraerReferencias(state.pdf, state.serperKey, state.usarSerper);
+      const data = await extraerReferencias(state.pdf, state.serperKey, state.usarSerper, state.permitirTraduccion);
       const referencias: RefItem[] = data.referencias.map((ref) => ({ id: createId(), referencia: ref }));
       dispatch({
         type: "extraerSuccess",
@@ -486,18 +504,24 @@ export function App() {
           referencias,
           serper_api_key: data.serper_api_key,
           usar_serper: data.usar_serper,
+          permitir_traduccion: data.permitir_traduccion,
         },
       });
     } catch (e) {
       dispatch({ type: "extraerError", error: e instanceof Error ? e.message : "Error desconocido" });
     }
-  }, [state.pdf, state.serperKey, state.usarSerper]);
+  }, [state.pdf, state.serperKey, state.usarSerper, state.permitirTraduccion]);
 
   const handleValidar = useCallback(async () => {
     if (!dataParaValidar) return;
     dispatch({ type: "validarStart" });
     try {
-      const data = await validarReferencias(dataParaValidar.referencias, dataParaValidar.serper_api_key, dataParaValidar.usar_serper);
+      const data = await validarReferencias(
+        dataParaValidar.referencias,
+        dataParaValidar.serper_api_key,
+        dataParaValidar.usar_serper,
+        dataParaValidar.permitir_traduccion
+      );
       dispatch({ type: "validarSuccess", data });
     } catch (e) {
       dispatch({ type: "validarError", error: e instanceof Error ? e.message : "Error desconocido" });
@@ -533,6 +557,7 @@ export function App() {
           dragging={state.dragging}
           usarSerper={state.usarSerper}
           serperKey={state.serperKey}
+          permitirTraduccion={state.permitirTraduccion}
           errorExtraer={state.errorExtraer}
           loadingExtraer={state.loadingExtraer}
           onFile={handleFile}
@@ -541,6 +566,7 @@ export function App() {
           onDragLeave={() => dispatch({ type: "setDragging", dragging: false })}
           onToggleSerper={(val) => dispatch({ type: "setUsarSerper", usarSerper: val })}
           onChangeSerperKey={(val) => dispatch({ type: "setSerperKey", serperKey: val })}
+          onToggleTraduccion={(val) => dispatch({ type: "setPermitirTraduccion", permitirTraduccion: val })}
           onExtraer={handleExtraer}
         />
       )}
@@ -555,6 +581,7 @@ export function App() {
           totalValidadas={totalValidadas}
           referencias={results.referencias}
           usarSerper={results.usar_serper}
+          permitirTraduccion={results.permitir_traduccion}
           validarData={state.validarData}
           loadingValidar={state.loadingValidar}
           errorValidar={state.errorValidar}
