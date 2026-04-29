@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Mail, Lock, ShieldCheck } from "lucide-react";
 import { requestPasswordResetCode, resetPasswordWithCode } from "@/services/auth.service";
+import * as THREE from "three";
+import FOG from "vanta/dist/vanta.fog.min";
 
 type Step = "request" | "code" | "password" | "success";
 
@@ -41,6 +43,34 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
+
+  const vantaRef = useRef<HTMLDivElement>(null);
+  const [vantaEffect, setVantaEffect] = useState<{ destroy: () => void } | null>(null);
+
+  useEffect(() => {
+    if (!vantaEffect && vantaRef.current) {
+      const effect = FOG({
+        el: vantaRef.current,
+        THREE: THREE,
+        mouseControls: true,
+        touchControls: true,
+        gyroControls: false,
+        minHeight: 200.0,
+        minWidth: 200.0,
+        highlightColor: 0x29c5e8,
+        midtoneColor: 0x161b22,
+        lowlightColor: 0x0d1117,
+        baseColor: 0x0d1117,
+        blurFactor: 0.6,
+        speed: 1.5,
+        zoom: 1.0,
+      });
+      setVantaEffect(effect);
+    }
+    return () => {
+      if (vantaEffect) vantaEffect.destroy();
+    };
+  }, [vantaEffect]);
 
   const secondsLeft = useMemo(() => {
     if (!expiresAt) return null;
@@ -127,8 +157,11 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md p-8">
+    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">
+      {/* Vanta Background */}
+      <div ref={vantaRef} className="absolute inset-0 -z-10" />
+
+      <Card className="w-full max-w-md p-8 bg-surface/80 backdrop-blur-md border-border/50 shadow-2xl">
         <div className="space-y-6">
           <div className="space-y-2 text-center">
             <h1 className="text-2xl font-semibold text-foreground">Recuperar contraseña</h1>

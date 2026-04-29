@@ -241,13 +241,12 @@ function LoginContent() {
           </form>
 
           {/* Divisor OAuth */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-muted" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background/0 px-2 text-muted backdrop-blur-none">O continuar con</span>
-            </div>
+          <div className="flex items-center my-6">
+            <div className="flex-grow border-t border-border/50"></div>
+            <span className="flex-shrink mx-4 text-[10px] uppercase tracking-wider text-muted font-medium">
+              O continuar con
+            </span>
+            <div className="flex-grow border-t border-border/50"></div>
           </div>
 
           {/* OAuth Buttons */}

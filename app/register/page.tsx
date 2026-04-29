@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -11,6 +11,8 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Lock, Mail, User, CheckCircle2 } from "lucide-react";
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
+import * as THREE from "three";
+import FOG from "vanta/dist/vanta.fog.min";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -24,6 +26,34 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
   });
+
+  const vantaRef = useRef<HTMLDivElement>(null);
+  const [vantaEffect, setVantaEffect] = useState<{ destroy: () => void } | null>(null);
+
+  useEffect(() => {
+    if (!vantaEffect && vantaRef.current) {
+      const effect = FOG({
+        el: vantaRef.current,
+        THREE: THREE,
+        mouseControls: true,
+        touchControls: true,
+        gyroControls: false,
+        minHeight: 200.0,
+        minWidth: 200.0,
+        highlightColor: 0x29c5e8,
+        midtoneColor: 0x161b22,
+        lowlightColor: 0x0d1117,
+        baseColor: 0x0d1117,
+        blurFactor: 0.6,
+        speed: 1.5,
+        zoom: 1.0,
+      });
+      setVantaEffect(effect);
+    }
+    return () => {
+      if (vantaEffect) vantaEffect.destroy();
+    };
+  }, [vantaEffect]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -62,8 +92,11 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md p-8">
+      <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">
+        {/* Vanta Background */}
+        <div ref={vantaRef} className="absolute inset-0 -z-10" />
+
+        <Card className="w-full max-w-md p-8 bg-surface/80 backdrop-blur-md border-border/50 shadow-2xl">
           <div className="flex flex-col items-center text-center space-y-4">
             <div className="h-16 w-16 rounded-full bg-success/20 flex items-center justify-center">
               <CheckCircle2 className="h-8 w-8 text-success" />
@@ -87,8 +120,11 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md p-8">
+    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">
+      {/* Vanta Background */}
+      <div ref={vantaRef} className="absolute inset-0 -z-10" />
+
+      <Card className="w-full max-w-md p-8 bg-surface/80 backdrop-blur-md border-border/50 shadow-2xl my-8">
         <div className="space-y-6">
           {/* Header */}
           <div className="space-y-2 text-center">
@@ -195,13 +231,12 @@ export default function RegisterPage() {
           </form>
 
           {/* Divisor OAuth */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-muted" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted">O registrarse con</span>
-            </div>
+          <div className="flex items-center my-6">
+            <div className="flex-grow border-t border-border/50"></div>
+            <span className="flex-shrink mx-4 text-[10px] uppercase tracking-wider text-muted font-medium">
+              O registrarse con
+            </span>
+            <div className="flex-grow border-t border-border/50"></div>
           </div>
 
           {/* OAuth Buttons */}
