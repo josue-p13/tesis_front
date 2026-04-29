@@ -32,7 +32,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Si la ruta es pública, permitir acceso
-  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
+  const isPublicRoute = pathname === "/" || publicRoutes.some((route) => pathname.startsWith(route));
 
   // Si la ruta no es pública y el usuario no está autenticado
   // redirigirlo al login

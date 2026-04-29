@@ -38,6 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         setUser(null);
         const isPublic =
+          pathname === "/" ||
           pathname?.startsWith("/login") ||
           pathname?.startsWith("/register") ||
           pathname?.startsWith("/verify-email") ||
