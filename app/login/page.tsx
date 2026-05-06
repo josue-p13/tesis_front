@@ -13,7 +13,7 @@ import { Lock, Mail, CheckCircle2 } from "lucide-react";
 import { Suspense } from "react";
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
 import * as THREE from "three";
-import FOG from "vanta/dist/vanta.fog.min";
+import CLOUDS from "vanta/dist/vanta.clouds.min";
 
 function Skeleton() {
   return (
@@ -51,7 +51,7 @@ function LoginContent() {
 
   useEffect(() => {
     if (!vantaEffect && vantaRef.current) {
-      const effect = FOG({
+      const effect = CLOUDS({
         el: vantaRef.current,
         THREE: THREE,
         mouseControls: true,
@@ -59,13 +59,14 @@ function LoginContent() {
         gyroControls: false,
         minHeight: 200.0,
         minWidth: 200.0,
-        highlightColor: 0x29c5e8,
-        midtoneColor: 0x161b22,
-        lowlightColor: 0x0d1117,
-        baseColor: 0x0d1117,
-        blurFactor: 0.6,
-        speed: 1.5,
-        zoom: 1.0,
+        backgroundColor: 0x0d1117,
+        skyColor: 0x162233, /* Cielo un poco más visible */
+        cloudColor: 0x1e819c, /* Nubes más sólidas y brillantes */
+        cloudShadowColor: 0x0a151f, /* Sombras menos profundas */
+        sunColor: 0x29c5e8,
+        sunGlareColor: 0x29c5e8,
+        sunPosition: new THREE.Vector3(1.0, 2.0, 3.0),
+        speed: 1.2,
       });
       setVantaEffect(effect);
     }

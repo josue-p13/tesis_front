@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AuthProvider>
 
             {/* ── Header ─────────────────────────────────────────── */}
-            <header className="sticky top-0 z-50 border-b border-border bg-surface/80 backdrop-blur-sm">
+            <header className="sticky top-0 z-50 border-b border-border/50 bg-surface/30 backdrop-blur-md">
               <div className="mx-auto flex max-w-4xl items-center justify-between px-4 h-12">
                 <div className="flex items-center gap-2.5">
                   <BookMarked className="h-4 w-4 text-primary" />

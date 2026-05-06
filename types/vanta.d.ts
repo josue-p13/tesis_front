@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-declare module "vanta/dist/vanta.fog.min" {
+declare module "vanta/dist/vanta.clouds.min" {
   interface VantaEffect {
     destroy: () => void;
   }
-  const fog: (options: any) => VantaEffect;
-  export default fog;
+  const clouds: (options: any) => VantaEffect;
+  export default clouds;
 }
