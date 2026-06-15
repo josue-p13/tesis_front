@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Lock, Mail, CheckCircle2 } from "lucide-react";
+import { Lock, Mail, CheckCircle2, ArrowLeft } from "lucide-react";
 import { Suspense } from "react";
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
 import * as THREE from "three";
@@ -198,7 +198,7 @@ function LoginContent() {
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="tu@email.com"
+                  placeholder="Ingresa tu correo electrónico"
                   value={formData.email}
                   onChange={handleChange}
                   disabled={isLoading}
@@ -217,7 +217,7 @@ function LoginContent() {
                   id="password"
                   name="password"
                   type="password"
-                  placeholder="Tu contraseña"
+                  placeholder="Ingresa tu contraseña"
                   value={formData.password}
                   onChange={handleChange}
                   disabled={isLoading}
@@ -254,11 +254,22 @@ function LoginContent() {
           <OAuthButtons mode="login" isLoading={isLoading} />
 
           {/* Footer */}
-          <div className="text-center text-sm">
-            <span className="text-muted">¿No tienes una cuenta? </span>
-            <Link href="/register" className="text-primary hover:underline font-medium">
-              Regístrate
-            </Link>
+          <div className="space-y-4">
+            <div className="text-center text-sm">
+              <span className="text-muted">¿No tienes una cuenta? </span>
+              <Link href="/register" className="text-primary hover:underline font-medium">
+                Regístrate
+              </Link>
+            </div>
+            
+            <div className="pt-2">
+              <Button variant="outline" asChild className="w-full">
+                <Link href="/">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Volver al inicio
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </Card>

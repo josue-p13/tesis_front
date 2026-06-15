@@ -6,6 +6,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { AuthProvider } from "@/lib/auth-context";
 import { HeaderUser } from "@/components/layout/header-user";
 import { BookMarked } from "lucide-react";
+import Link from "next/link";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -19,19 +20,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
           <AuthProvider>
 
             {/* ── Header ─────────────────────────────────────────── */}
             <header className="sticky top-0 z-50 border-b border-border/50 bg-surface/30 backdrop-blur-md">
               <div className="mx-auto flex max-w-4xl items-center justify-between px-4 h-12">
-                <div className="flex items-center gap-2.5">
+                <Link href="/" className="flex items-center gap-2.5 group transition-opacity hover:opacity-80">
                   <BookMarked className="h-4 w-4 text-primary" />
                   <span className="font-semibold text-sm tracking-tight">RefCheck</span>
                   <span className="hidden sm:block text-xs text-muted">
                     · Validador de referencias bibliográficas
                   </span>
-                </div>
+                </Link>
                 <div className="flex items-center gap-3">
                   <HeaderUser />
                   <ThemeToggle />
