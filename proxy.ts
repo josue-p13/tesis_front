@@ -8,7 +8,7 @@ const publicRoutes = ["/login", "/register", "/verify-email", "/forgot-password"
 // Rutas de autenticación (si estás logueado, redirigir a home)
 const authRoutes = ["/login", "/register"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Obtener el token de las cookies

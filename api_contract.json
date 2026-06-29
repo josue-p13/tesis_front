@@ -49,7 +49,7 @@
             "campos": {
               "nombre": {
                 "tipo": "string",
-                "valores_posibles": ["IEEE", "APA", "Harvard", "ACM", "Vancouver", "MLA", "Desconocido"],
+                "valores_posibles": ["IEEE", "APA", "Vancouver", "Desconocido"],
                 "ejemplo": "IEEE"
               },
               "descripcion": {

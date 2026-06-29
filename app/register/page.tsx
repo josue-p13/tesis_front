@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Lock, Mail, User, CheckCircle2 } from "lucide-react";
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
 import * as THREE from "three";
-import CLOUDS from "vanta/dist/vanta.clouds.min";
+import CELLS from "vanta/dist/vanta.cells.min";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -29,32 +29,49 @@ export default function RegisterPage() {
 
   const vantaRef = useRef<HTMLDivElement>(null);
   const [vantaEffect, setVantaEffect] = useState<{ destroy: () => void } | null>(null);
+  const [webglError, setWebglError] = useState(false);
 
   useEffect(() => {
-    if (!vantaEffect && vantaRef.current) {
-      const effect = CLOUDS({
-        el: vantaRef.current,
-        THREE: THREE,
-        mouseControls: true,
-        touchControls: true,
-        gyroControls: false,
-        minHeight: 200.0,
-        minWidth: 200.0,
-        backgroundColor: 0x0d1117,
-        skyColor: 0x162233, /* Cielo un poco más visible */
-        cloudColor: 0x1e819c, /* Nubes más sólidas y brillantes */
-        cloudShadowColor: 0x0a151f, /* Sombras menos profundas */
-        sunColor: 0x29c5e8,
-        sunGlareColor: 0x29c5e8,
-        sunPosition: new THREE.Vector3(1.0, 2.0, 3.0),
-        speed: 1.2,
-      });
-      setVantaEffect(effect);
+    if (!vantaEffect && vantaRef.current && !webglError) {
+      const hasWebGL = (() => {
+        try {
+          const c = document.createElement("canvas");
+          return !!(c.getContext("webgl") || c.getContext("webgl2"));
+        } catch {
+          return false;
+        }
+      })();
+
+      if (!hasWebGL) {
+        setWebglError(true);
+        return;
+      }
+
+      try {
+        const effect = CELLS({
+          el: vantaRef.current,
+          THREE: THREE,
+          mouseControls: true,
+          touchControls: true,
+          gyroControls: false,
+          minHeight: 200.0,
+          minWidth: 200.0,
+          scale: 1.0,
+          color1: 0x1e819c,
+          color2: 0x162233,
+          size: 1.5,
+          speed: 1.2,
+          backgroundColor: 0x0d1117,
+        });
+        setVantaEffect(effect);
+      } catch {
+        setWebglError(true);
+      }
     }
     return () => {
       if (vantaEffect) vantaEffect.destroy();
     };
-  }, [vantaEffect]);
+  }, [vantaEffect, webglError]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -94,8 +111,11 @@ export default function RegisterPage() {
   if (success) {
     return (
       <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">
-        {/* Vanta Background */}
-        <div ref={vantaRef} className="absolute inset-0 -z-10" />
+        {webglError ? (
+          <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0d1117] via-[#162233] to-[#0a151f]" />
+        ) : (
+          <div ref={vantaRef} className="absolute inset-0 -z-10" />
+        )}
 
         <Card className="w-full max-w-md p-8 bg-surface/80 backdrop-blur-md border-border/50 shadow-2xl">
           <div className="flex flex-col items-center text-center space-y-4">
@@ -122,8 +142,11 @@ export default function RegisterPage() {
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">
-      {/* Vanta Background */}
-      <div ref={vantaRef} className="absolute inset-0 -z-10" />
+      {webglError ? (
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0d1117] via-[#162233] to-[#0a151f]" />
+      ) : (
+        <div ref={vantaRef} className="absolute inset-0 -z-10" />
+      )}
 
       <Card className="w-full max-w-md p-8 bg-surface/80 backdrop-blur-md border-border/50 shadow-2xl my-8">
         <div className="space-y-6">

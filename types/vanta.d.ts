@@ -15,3 +15,12 @@ declare module "vanta/dist/vanta.globe.min" {
   const globe: (options: any) => VantaEffect;
   export default globe;
 }
+
+declare module "vanta/dist/vanta.cells.min" {
+  interface VantaEffect {
+    destroy: () => void;
+  }
+  const cells: (options: any) => VantaEffect;
+  export default cells;
+}
+
