@@ -10,11 +10,13 @@ interface OAuthButtonsProps {
 
 export function OAuthButtons({ mode, isLoading }: OAuthButtonsProps) {
   const handleGoogleAction = () => {
-    window.location.href = `http://localhost:8000/auth/${mode}/google`;
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    window.location.href = `${baseUrl}/auth/${mode}/google`;
   };
 
   const handleMicrosoftAction = () => {
-    window.location.href = `http://localhost:8000/auth/${mode}/microsoft`;
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    window.location.href = `${baseUrl}/auth/${mode}/microsoft`;
   };
 
   const label = mode === "login" ? "Continuar con" : "Registrarse con";
