@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       email,
       password: hashedPassword,
       name,
-      emailVerified: false,
+      emailVerified: true, // Verificado automáticamente para facilitar pruebas en la tesis
       verificationToken,
       verificationTokenExpiry,
       createdAt: new Date(),

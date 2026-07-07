@@ -33,19 +33,30 @@ export async function GET(req: NextRequest) {
       email,
       password: "", // Sin password por ser OAuth
       name,
-      emailVerified: false, 
+      emailVerified: true, // Verificado automáticamente para facilitar pruebas en la tesis
       verificationToken,
       verificationTokenExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000),
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    await usersCollection.insertOne(newUser as UserDocument);
+    const result = await usersCollection.insertOne(newUser as UserDocument);
     await sendVerificationEmail(email, name, verificationToken);
 
-    return NextResponse.redirect(
-      new URL(`/login?status=verify-email&email=${encodeURIComponent(email)}`, req.url)
-    );
+    // LOGIN EXITOSO INMEDIATO TRAS REGISTRO OAUTH
+    const token = signToken({
+      userId: result.insertedId.toString(),
+      email: newUser.email,
+    });
+
+    const response = NextResponse.redirect(new URL("/", req.url));
+    response.cookies.set("auth-token", token, {
+      httpOnly: true,
+      maxAge: 60 * 60 * 24 * 7,
+      path: "/",
+    });
+
+    return response;
   }
 
   // CASO B: El usuario SÍ existe
