@@ -43,20 +43,9 @@ export async function GET(req: NextRequest) {
     const result = await usersCollection.insertOne(newUser as UserDocument);
     await sendVerificationEmail(email, name, verificationToken);
 
-    // LOGIN EXITOSO INMEDIATO TRAS REGISTRO OAUTH
-    const token = signToken({
-      userId: result.insertedId.toString(),
-      email: newUser.email,
-    });
-
-    const response = NextResponse.redirect(new URL("/", req.url));
-    response.cookies.set("auth-token", token, {
-      httpOnly: true,
-      maxAge: 60 * 60 * 24 * 7,
-      path: "/",
-    });
-
-    return response;
+    return NextResponse.redirect(
+      new URL(`/login?status=verify-email&email=${encodeURIComponent(email)}`, req.url)
+    );
   }
 
   // CASO B: El usuario SÍ existe
